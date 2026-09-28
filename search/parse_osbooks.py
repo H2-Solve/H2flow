@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import os
 import xml.etree.ElementTree as ET
+import re
 
 from .chunk import chunk_text
 from .schemas import Chunk
@@ -30,25 +31,122 @@ def _local(tag: str) -> str:
     return tag.split("}", 1)[1] if "}" in tag else tag
 
 
+# def _linearize_math(math_el: ET.Element) -> str:
+#     """Flatten MathML to readable tokens, e.g. P(1)=P0(1.02)."""
+#     return "".join(math_el.itertext()).strip()
+
+
+# def _block_text(el: ET.Element) -> tuple[str, list[str]]:
+#     """Plain text of a <para>/<equation>/<caption> block + equations found inside."""
+#     equations: list[str] = []
+#     parts: list[str] = []
+#     for node in el.iter():
+#         if _local(node.tag) == "math" and node.tag.startswith("{" + MATH_NS):
+#             eq = _linearize_math(node)
+#             if eq:
+#                 equations.append(eq)
+#                 parts.append(f" [MATH: {eq}] ")
+#         elif _local(node.tag) in {"link", "term", "emphasis", "image"}:
+#             continue  # text handled via itertext at block level; skip double-count
+#     text = "".join(el.itertext())
+#     return " ".join(text.split()), equations
+
+MATH_TAG = "{" + MATH_NS + "}math"
+_SIMPLE = re.compile(r"^[A-Za-z0-9.]+$")
+
+
+def _is_wrapped(s: str) -> bool:
+    """True if s is one parenthesised group, e.g. "(t/4)" but not "(a)+(b)"."""
+    if not (s.startswith("(") and s.endswith(")")):
+        return False
+    depth = 0
+    for i, ch in enumerate(s):
+        depth += (ch == "(") - (ch == ")")
+        if depth == 0 and i < len(s) - 1:
+            return False
+    return True
+
+
+def _wrap(s: str) -> str:
+    """Parenthesise unless s is a plain word/number or already one group."""
+    return s if _SIMPLE.match(s) or _is_wrapped(s) else f"({s})"
+
+
+def _is_frac(el: ET.Element) -> bool:
+    """A fraction, possibly wrapped in single-child <mrow>s."""
+    while _local(el.tag) == "mrow" and len(el) == 1:
+        el = el[0]
+    return _local(el.tag) == "mfrac"
+
+
+def _math_children(el: ET.Element) -> list[str]:
+    return [_math_to_text(c) for c in el]
+
+
+def _math_to_text(el: ET.Element) -> str:
+    """Convert MathML to linear text, e.g. 2^(t/4), log_3(81), sqrt(x), (a)/(b).
+
+    Tokens (mi/mn/mo/mtext) become their text; sup/sub/frac/roots become
+    ^ _ / sqrt() root(); unknown elements just concatenate their children.
+    """
+    name = _local(el.tag)
+    if name in {"mi", "mn", "mo", "mtext"}:
+        return "".join(el.itertext())
+    if name == "mspace":
+        return " "
+    kids = _math_children(el)
+    if name == "msup" and len(kids) == 2:
+        return f"{_wrap(kids[0])}^{_wrap(kids[1])}"
+    if name == "msub" and len(kids) == 2:
+        return f"{_wrap(kids[0])}_{_wrap(kids[1])}"
+    if name == "msubsup" and len(kids) == 3:
+        return f"{_wrap(kids[0])}_{_wrap(kids[1])}^{_wrap(kids[2])}"
+    if name == "mfrac" and len(kids) == 2:
+        return f"{_wrap(kids[0])}/{_wrap(kids[1])}"
+    if name == "msqrt":
+        return f"sqrt({''.join(kids)})"
+    if name == "mroot" and len(kids) == 2:
+        return f"root({kids[0]}, {kids[1]})"
+    if name == "mtr":
+        return " ".join(k for k in kids if k.strip())
+    if name == "mtable":
+        return "; ".join(k for k in kids if k.strip())
+    if name == "mrow":
+        out: list[str] = []
+        for i, child in enumerate(el):
+            text = kids[i]
+            if _is_frac(child):
+                prev = out[-1] if out else ""
+                nxt = kids[i + 1] if i + 1 < len(kids) else ""
+                # (1/2)ln(x), not 1/2ln(x): keep implicit multiplication unambiguous
+                if nxt[:1].isalnum() or nxt[:1] == "(" or prev[-1:].isalnum() or prev[-1:] == ")":
+                    text = f"({text})"
+            out.append(text)
+        return "".join(out)
+    return "".join(kids)  # mtd, math, and anything unrecognised
+
+
 def _linearize_math(math_el: ET.Element) -> str:
-    """Flatten MathML to readable tokens, e.g. P(1)=P0(1.02)."""
-    return "".join(math_el.itertext()).strip()
+    """Faithful linear text for one <math> element, e.g. n(6)=1000·2^(6/4)≈2828."""
+    return " ".join(_math_to_text(math_el).split())
+
+
+def _text_with_math(el: ET.Element) -> str:
+    """Like "".join(el.itertext()) but each <math> is converted, not flattened."""
+    parts = [el.text or ""]
+    for child in el:
+        if child.tag == MATH_TAG:
+            parts.append(_linearize_math(child))
+        else:
+            parts.append(_text_with_math(child))
+        parts.append(child.tail or "")
+    return "".join(parts)
 
 
 def _block_text(el: ET.Element) -> tuple[str, list[str]]:
     """Plain text of a <para>/<equation>/<caption> block + equations found inside."""
-    equations: list[str] = []
-    parts: list[str] = []
-    for node in el.iter():
-        if _local(node.tag) == "math" and node.tag.startswith("{" + MATH_NS):
-            eq = _linearize_math(node)
-            if eq:
-                equations.append(eq)
-                parts.append(f" [MATH: {eq}] ")
-        elif _local(node.tag) in {"link", "term", "emphasis", "image"}:
-            continue  # text handled via itertext at block level; skip double-count
-    text = "".join(el.itertext())
-    return " ".join(text.split()), equations
+    equations = [eq for m in el.iter(MATH_TAG) if (eq := _linearize_math(m))]
+    return " ".join(_text_with_math(el).split()), equations
 
 def _container_text(el: ET.Element) -> tuple[str, list[str]]:
     """Text of a whole example/exercise/list/note as ONE block.
