@@ -17,3 +17,7 @@ def test_math_module_extracts_equations():
     assert chunks[0].title == "Exponential and Logarithmic Functions"
     assert any(c.equations for c in chunks), "expected MathML equations linearized"
     assert any("Exponential Functions" in c.section for c in chunks), "section titles preserved"
+
+def test_worked_example_keeps_solution():
+    chunks = parse_cnxml_file("tests/fixtures/m53481.cnxml", "calculus-volume-1")
+    assert any("2828" in c.text for c in chunks), "bacteria example solution was dropped"

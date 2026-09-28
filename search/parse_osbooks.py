@@ -50,6 +50,40 @@ def _block_text(el: ET.Element) -> tuple[str, list[str]]:
     text = "".join(el.itertext())
     return " ".join(text.split()), equations
 
+def _container_text(el: ET.Element) -> tuple[str, list[str]]:
+    """Text of a whole example/exercise/list/note as ONE block.
+
+    Walks every descendant in document order so a problem and its solution
+    stay together, e.g. "Bacterial Growth. Problem: ... Solution: ...".
+    """
+    parts: list[str] = []
+    equations: list[str] = []
+
+    def walk(node: ET.Element) -> None:
+        for child in node:
+            name = _local(child.tag)
+            if name in {"para", "equation"}:
+                text, eqs = _block_text(child)
+                if text:
+                    parts.append(text)
+                    equations.extend(eqs)
+            elif name == "title":
+                title = " ".join("".join(child.itertext()).split())
+                if title:
+                    parts.append(title + ".")
+            elif name == "caption":
+                text, eqs = _block_text(child)
+                if text:
+                    parts.append(f"[Figure] {text}")
+                    equations.extend(eqs)
+            elif name in {"problem", "solution"}:
+                parts.append(name.capitalize() + ":")
+                walk(child)
+            elif len(child):
+                walk(child)  # exercise, item, note, list, etc.
+
+    walk(el)
+    return " ".join(parts), equations
 
 def parse_cnxml_string(xml_str: str, module_id: str, book_id: str, source: str = "osbooks") -> list[Chunk]:
     root = ET.fromstring(xml_str)
@@ -87,12 +121,9 @@ def parse_cnxml_string(xml_str: str, module_id: str, book_id: str, source: str =
                     if text:
                         blocks.append((section, f"[Figure] {text}", eqs))
             elif name in {"list", "example", "exercise", "note"}:
-                for sub in child.iter():
-                    if _local(sub.tag) in {"para", "equation"}:
-                        text, eqs = _block_text(sub)
-                        if text:
-                            blocks.append((section, text, eqs))
-                        break
+                text, eqs = _container_text(child)
+                if text:
+                    blocks.append((section, text, eqs))
             else:
                 # Recurse into unknown containers (e.g. content root)
                 if len(child):
