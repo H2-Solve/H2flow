@@ -1,7 +1,9 @@
 """Create index + bulk-load chunks (mirrors elastic_example/bonsai_load.py).
 
 Usage:
+  python -m search.index --bundle /path/to/osbooks-calculus-bundle --list-books
   python -m search.index --bundle /path/to/osbooks-calculus-bundle --book calculus-volume-1
+  python -m search.index --bundle /path/to/osbooks-calculus-bundle   # every book in the bundle
   python -m search.index --fixtures  # index the 2 test fixtures only
 """
 
@@ -11,7 +13,8 @@ import argparse
 
 from elasticsearch import Elasticsearch, helpers
 
-from .parse_osbooks import iter_module_files, parse_cnxml_file
+from .bundle import collect_chunks, read_bundle
+from .parse_osbooks import parse_cnxml_file
 
 INDEX_NAME = "textbook-chunks"
 
@@ -22,6 +25,7 @@ MAPPING = {
             "module_id": {"type": "keyword"},
             "title": {"type": "text"},
             "section": {"type": "text"},
+            "chapter": {"type": "text"},
             "text": {"type": "text"},
             "equations": {"type": "text"},
             "source": {"type": "keyword"},
@@ -43,38 +47,71 @@ def create_index(es: Elasticsearch, index: str = INDEX_NAME, reset: bool = False
         es.indices.create(index=index, body=MAPPING)
 
 
-def bulk_index(es: Elasticsearch, chunks, index: str = INDEX_NAME) -> int:
+def build_actions(chunks, index: str = INDEX_NAME) -> list[dict]:
+    """One bulk action per chunk, with a stable _id ("<module_id>:<n>").
+
+    Stable IDs mean re-running the loader replaces chunks instead of adding
+    copies. A module shared by two books is stored once. If you change the
+    parser or chunker, use --reset: leftover higher-numbered chunks from an
+    older run would otherwise stay behind.
+    """
+    counters: dict[str, int] = {}
     actions = []
     for c in chunks:
-        doc = c.to_es_doc()
-        actions.append({"_op_type": "index", "_index": index, **doc})
+        n = counters.get(c.module_id, 0)
+        counters[c.module_id] = n + 1
+        actions.append({"_op_type": "index", "_index": index, "_id": f"{c.module_id}:{n}", **c.to_es_doc()})
+    return actions
+
+
+def bulk_index(es: Elasticsearch, chunks, index: str = INDEX_NAME) -> int:
+    actions = build_actions(chunks, index)
     helpers.bulk(es, actions)
     return len(actions)
 
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--bundle", default=None)
-    ap.add_argument("--book", default="calculus-volume-1")
+    ap.add_argument("--bundle", default=None, help="path to a cloned osbooks-*-bundle")
+    ap.add_argument("--book", default=None, help="slug of one book in the bundle (default: all books)")
+    ap.add_argument("--list-books", action="store_true", help="show the books in --bundle and exit")
     ap.add_argument("--fixtures", action="store_true")
     ap.add_argument("--reset", action="store_true")
     args = ap.parse_args()
 
-    es = get_client()
-    create_index(es, reset=args.reset)
+    if args.list_books:
+        if not args.bundle:
+            raise SystemExit("--list-books needs --bundle <path>")
+        books = read_bundle(args.bundle)
+        if not books:
+            raise SystemExit(f"no collections found under {args.bundle}")
+        for b in books:
+            print(f"{b.slug}\t{b.title}\t{len(b.modules)} modules")
+        return
 
     if args.fixtures:
+        label = args.book or "calculus-volume-1"
         paths = ["tests/fixtures/m53472.cnxml", "tests/fixtures/m53481.cnxml"]
+        chunks = [c for p in paths for c in parse_cnxml_file(p, label)]
+        print(f"parsed {len(paths)} fixture modules as '{label}'")
     elif args.bundle:
-        paths = iter_module_files(args.bundle)
+        try:
+            chunks, report = collect_chunks(args.bundle, args.book)
+        except ValueError as exc:
+            raise SystemExit(str(exc))
+        for slug, st in report.per_book.items():
+            print(f"{slug}: {st['modules']} modules, {st['chunks']} chunks")
+        if report.missing:
+            print(f"skipped {len(report.missing)} modules listed in a collection but missing on disk")
+        for module_id, err in report.failed:
+            print(f"FAILED to parse {module_id}: {err}")
     else:
         raise SystemExit("pass --fixtures or --bundle <path>")
 
-    chunks = []
-    for p in paths:
-        chunks.extend(parse_cnxml_file(p, args.book))
+    es = get_client()
+    create_index(es, reset=args.reset)
     n = bulk_index(es, chunks)
-    print(f"indexed {n} chunks from {len(paths)} modules into {INDEX_NAME}")
+    print(f"indexed {n} chunks into {INDEX_NAME}")
 
 
 if __name__ == "__main__":

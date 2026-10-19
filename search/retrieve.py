@@ -35,6 +35,7 @@ def get_documents(query: str, top_k: int = 5, index: str = INDEX_NAME,
                 "title": src.get("title", ""),
                 "module_id": src.get("module_id", ""),
                 "section": src.get("section", ""),
+                "chapter": src.get("chapter", ""),
                 "excerpt": src.get("excerpt", src.get("text", "")[:500]),
                 "score": hit.get("_score", 0.0),
             }
