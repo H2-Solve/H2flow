@@ -18,7 +18,33 @@ from .parse_osbooks import parse_cnxml_file
 
 INDEX_NAME = "textbook-chunks"
 
+# Text search should see math the way people say it: x^2 -> "x squared", sqrt( -> "square root",
+# f' -> "f prime". These rewrites run only inside Elasticsearch's analyzer, for indexing and for
+# queries alike; the stored text that the LLM reads is not changed.
+MATH_CHAR_FILTERS = {
+    "math_squared": (r"\^2(?![0-9])", " squared "),
+    "math_cubed": (r"\^3(?![0-9])", " cubed "),
+    "math_sqrt": (r"sqrt\(", " square root "),
+    "math_prime": ("\u2032", " prime "),
+}
+
+ANALYSIS = {
+    "char_filter": {
+        name: {"type": "pattern_replace", "pattern": pattern, "replacement": replacement}
+        for name, (pattern, replacement) in MATH_CHAR_FILTERS.items()
+    },
+    "analyzer": {
+        "math_text": {
+            "type": "custom",
+            "tokenizer": "standard",
+            "char_filter": list(MATH_CHAR_FILTERS),
+            "filter": ["lowercase"],
+        }
+    },
+}
+
 MAPPING = {
+    "settings": {"analysis": ANALYSIS},
     "mappings": {
         "properties": {
             "book_id": {"type": "keyword"},
@@ -26,12 +52,12 @@ MAPPING = {
             "title": {"type": "text"},
             "section": {"type": "text"},
             "chapter": {"type": "text"},
-            "text": {"type": "text"},
+            "text": {"type": "text", "analyzer": "math_text"},
             "equations": {"type": "text"},
             "source": {"type": "keyword"},
             "excerpt": {"type": "text"},
         }
-    }
+    },
 }
 
 
