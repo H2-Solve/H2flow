@@ -4,6 +4,7 @@ Run it with Elasticsearch up and the index loaded:
   python -m search.evaluate
   python -m search.evaluate --save eval/baseline.json      # remember this run
   python -m search.evaluate --baseline eval/baseline.json  # show rank changes vs that run
+  python -m search.evaluate --fields "text,section^3" --baseline eval/baseline.json  # try a weighting
 
 Questions live in eval/questions.json as
   [{"question": "power rule", "expect": ["m53575"]}, ...]
@@ -50,6 +51,10 @@ def run_eval(questions: list[dict], search, top_k: int) -> list[dict]:
     return results
 
 
+def describe_search(fields: list[str] | None, match_type: str) -> str:
+    return "text only (match)" if not fields else f"{','.join(fields)} [{match_type}]"
+
+
 def _fmt_rank(rank: int | None) -> str:
     return "miss" if rank is None else str(rank)
 
@@ -71,6 +76,8 @@ def main() -> None:
     ap.add_argument("--top-k", type=int, default=5)
     ap.add_argument("--save", help="write this run's ranks to a JSON file")
     ap.add_argument("--baseline", help="compare against ranks saved by an earlier --save")
+    ap.add_argument("--fields", help='comma-separated, e.g. "text,section^3,title^2" (default: text only)')
+    ap.add_argument("--match-type", default="most_fields", choices=["most_fields", "best_fields"])
     args = ap.parse_args()
 
     with open(args.questions, encoding="utf-8") as f:
@@ -79,14 +86,19 @@ def main() -> None:
     if args.baseline:
         with open(args.baseline, encoding="utf-8") as f:
             baseline = json.load(f)
+    baseline_desc = baseline.pop("_search", "unknown")
 
-    from .retrieve import get_documents  # imported here so the scoring helpers need no Elasticsearch
+    from .retrieve import get_documents, parse_fields  # imported here so the scoring helpers need no Elasticsearch
+
+    fields = parse_fields(args.fields)
+    desc = describe_search(fields, args.match_type)
 
     try:
-        results = run_eval(questions, lambda query, k: get_documents(query, top_k=k), max(args.top_k, max(KS)))
+        results = run_eval(questions, lambda query, k: get_documents(query, top_k=k, fields=fields, match_type=args.match_type), max(args.top_k, max(KS)))
     except Exception as exc:
         raise SystemExit(f"search failed ({exc.__class__.__name__}). Is Elasticsearch running and the index loaded?")
 
+    print(f"searching: {desc}" + (f"   |   baseline: {baseline_desc}" if baseline else ""))
     header = f"{'rank':>5}  " + (f"{'was':>5}  {'':7}" if baseline else "") + "question"
     print(header)
     for r in results:
@@ -108,7 +120,7 @@ def main() -> None:
     if args.save:
         os.makedirs(os.path.dirname(args.save) or ".", exist_ok=True)
         with open(args.save, "w", encoding="utf-8") as f:
-            json.dump({r["question"]: r["rank"] for r in results}, f, indent=2)
+            json.dump({"_search": desc, **{r["question"]: r["rank"] for r in results}}, f, indent=2)
         print(f"saved ranks to {args.save}")
 
 

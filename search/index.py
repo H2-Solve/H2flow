@@ -2,6 +2,7 @@
 
 Usage:
   python -m search.index --bundle /path/to/osbooks-calculus-bundle --list-books
+  python -m search.index --bundle /path/to/osbooks-calculus-bundle --book calculus-volume-1 --outline
   python -m search.index --bundle /path/to/osbooks-calculus-bundle --book calculus-volume-1
   python -m search.index --bundle /path/to/osbooks-calculus-bundle   # every book in the bundle
   python -m search.index --fixtures  # index the 2 test fixtures only
@@ -10,10 +11,11 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import sys
 
 from elasticsearch import Elasticsearch, helpers
 
-from .bundle import collect_chunks, read_bundle
+from .bundle import collect_chunks, outline_lines, read_bundle
 from .parse_osbooks import parse_cnxml_file
 
 INDEX_NAME = "textbook-chunks"
@@ -101,6 +103,7 @@ def main() -> None:
     ap.add_argument("--bundle", default=None, help="path to a cloned osbooks-*-bundle")
     ap.add_argument("--book", default=None, help="slug of one book in the bundle (default: all books)")
     ap.add_argument("--list-books", action="store_true", help="show the books in --bundle and exit")
+    ap.add_argument("--outline", action="store_true", help="print chapter > module id + title and exit")
     ap.add_argument("--fixtures", action="store_true")
     ap.add_argument("--reset", action="store_true")
     args = ap.parse_args()
@@ -113,6 +116,16 @@ def main() -> None:
             raise SystemExit(f"no collections found under {args.bundle}")
         for b in books:
             print(f"{b.slug}\t{b.title}\t{len(b.modules)} modules")
+        return
+
+    if args.outline:
+        if not args.bundle:
+            raise SystemExit("--outline needs --bundle <path>")
+        sys.stdout.reconfigure(errors="replace")  # titles may hold characters the console cannot show
+        try:
+            print("\n".join(outline_lines(args.bundle, args.book)))
+        except ValueError as exc:
+            raise SystemExit(str(exc))
         return
 
     if args.fixtures:

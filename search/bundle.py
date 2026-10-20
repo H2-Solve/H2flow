@@ -12,7 +12,7 @@ import os
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
 
-from .parse_osbooks import parse_cnxml_file
+from .parse_osbooks import CNXML_NS, parse_cnxml_file
 from .schemas import Chunk
 
 COL_NS = "http://cnx.rice.edu/collxml"
@@ -77,12 +77,7 @@ def read_bundle(bundle_root: str) -> list[Book]:
     return books
 
 
-def collect_chunks(bundle_root: str, book_slug: str | None = None) -> tuple[list[Chunk], LoadReport]:
-    """Parse the modules of one book (or all books) in a bundle, labelled correctly.
-
-    A module shared by several books is parsed once, under the first book
-    (by file name) that lists it. Modules that no collection lists are skipped.
-    """
+def _select_books(bundle_root: str, book_slug: str | None) -> list[Book]:
     books = read_bundle(bundle_root)
     if not books:
         raise ValueError(f"no collections found under {os.path.join(bundle_root, 'collections')}")
@@ -92,7 +87,46 @@ def collect_chunks(bundle_root: str, book_slug: str | None = None) -> tuple[list
             raise ValueError(
                 f"no book '{book_slug}' in this bundle; available: " + ", ".join(b.slug for b in books)
             )
-        books = wanted
+        return wanted
+    return books
+
+
+def module_title(bundle_root: str, module_id: str) -> str:
+    """The <title> of modules/<id>/index.cnxml, for outlines."""
+    path = os.path.join(bundle_root, "modules", module_id, "index.cnxml")
+    if not os.path.isfile(path):
+        return "(missing on disk)"
+    try:
+        title_el = ET.parse(path).getroot().find(f"{{{CNXML_NS}}}title")
+    except ET.ParseError:
+        return "(unreadable)"
+    if title_el is None:
+        return "(untitled)"
+    return " ".join("".join(title_el.itertext()).split())
+
+
+def outline_lines(bundle_root: str, book_slug: str | None = None) -> list[str]:
+    """Book > chapter > module id + title, in book order. For writing test questions."""
+    lines: list[str] = []
+    for book in _select_books(bundle_root, book_slug):
+        lines.append(f"{book.slug}  ({book.title})")
+        current: str | None = None
+        for module_id, chapter in book.modules:
+            if chapter != current:
+                lines.append(f"  {chapter or '(outside any chapter)'}")
+                current = chapter
+            lines.append(f"    {module_id}  {module_title(bundle_root, module_id)}")
+        lines.append("")
+    return lines
+
+
+def collect_chunks(bundle_root: str, book_slug: str | None = None) -> tuple[list[Chunk], LoadReport]:
+    """Parse the modules of one book (or all books) in a bundle, labelled correctly.
+
+    A module shared by several books is parsed once, under the first book
+    (by file name) that lists it. Modules that no collection lists are skipped.
+    """
+    books = _select_books(bundle_root, book_slug)
 
     chunks: list[Chunk] = []
     report = LoadReport()
