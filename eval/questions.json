@@ -1,0 +1,15 @@
+[
+  {"question": "power rule", "expect": ["m53575"]},
+  {"question": "quotient rule", "expect": ["m53575"]},
+  {"question": "constant multiple rule", "expect": ["m53575"]},
+  {"question": "chain rule", "expect": ["m53581"]},
+  {"question": "second derivative test", "expect": ["m53613"]},
+  {"question": "optimization problems closed bounded interval", "expect": ["m53614"]},
+  {"question": "work done by a force", "expect": ["m53648"]},
+  {"question": "domain of a function", "expect": ["m53477"]},
+  {"question": "derivative of the exponential function", "expect": ["m53586"]},
+  {"question": "derivative of x squared", "expect": ["m53575"]},
+  {"question": "how do I differentiate a quotient of two functions", "expect": ["m53575"]},
+  {"question": "what is the derivative of e to the x", "expect": ["m53586"]},
+  {"question": "how much work does it take to move an object with a constant force", "expect": ["m53648"]}
+]
