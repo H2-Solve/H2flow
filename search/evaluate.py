@@ -5,6 +5,7 @@ Run it with Elasticsearch up and the index loaded:
   python -m search.evaluate --save eval/baseline.json      # remember this run
   python -m search.evaluate --baseline eval/baseline.json  # show rank changes vs that run
   python -m search.evaluate --fields "text,section^3" --baseline eval/baseline.json  # try a weighting
+  python -m search.evaluate --demote 0.3 --baseline eval/baseline.json  # push Exercises/Glossary down
 
 Questions live in eval/questions.json as
   [{"question": "power rule", "expect": ["m53575"]}, ...]
@@ -51,8 +52,9 @@ def run_eval(questions: list[dict], search, top_k: int) -> list[dict]:
     return results
 
 
-def describe_search(fields: list[str] | None, match_type: str) -> str:
-    return "text only (match)" if not fields else f"{','.join(fields)} [{match_type}]"
+def describe_search(fields: list[str] | None, match_type: str, demote: float | None = None) -> str:
+    base = "text only (match)" if not fields else f"{','.join(fields)} [{match_type}]"
+    return base if demote is None else f"{base}, demote exercises/glossary x{demote}"
 
 
 def _fmt_rank(rank: int | None) -> str:
@@ -78,6 +80,7 @@ def main() -> None:
     ap.add_argument("--baseline", help="compare against ranks saved by an earlier --save")
     ap.add_argument("--fields", help='comma-separated, e.g. "text,section^3,title^2" (default: text only)')
     ap.add_argument("--match-type", default="most_fields", choices=["most_fields", "best_fields"])
+    ap.add_argument("--demote", type=float, help="multiply scores of Exercises/Glossary chunks by this (0 to 1)")
     args = ap.parse_args()
 
     with open(args.questions, encoding="utf-8") as f:
@@ -91,10 +94,10 @@ def main() -> None:
     from .retrieve import get_documents, parse_fields  # imported here so the scoring helpers need no Elasticsearch
 
     fields = parse_fields(args.fields)
-    desc = describe_search(fields, args.match_type)
+    desc = describe_search(fields, args.match_type, args.demote)
 
     try:
-        results = run_eval(questions, lambda query, k: get_documents(query, top_k=k, fields=fields, match_type=args.match_type), max(args.top_k, max(KS)))
+        results = run_eval(questions, lambda query, k: get_documents(query, top_k=k, fields=fields, match_type=args.match_type, demote=args.demote), max(args.top_k, max(KS)))
     except Exception as exc:
         raise SystemExit(f"search failed ({exc.__class__.__name__}). Is Elasticsearch running and the index loaded?")
 
