@@ -19,7 +19,7 @@ import os
 import re
 import xml.etree.ElementTree as ET
 
-from .chunk import MAX_CHARS, OVERLAP, chunk_text, pack_blocks
+from .chunk import MAX_CHARS, OVERLAP, EquationSpan, chunk_text, pack_blocks
 from .schemas import Chunk
 
 CNXML_NS = "http://cnx.rice.edu/cnxml"
@@ -48,16 +48,22 @@ def _is_wrapped(s: str) -> bool:
     return True
 
 
-def _wrap(s: str) -> str:
-    """Parenthesise unless s is a plain word/number or already one group."""
-    return s if _SIMPLE.match(s) or _is_wrapped(s) else f"({s})"
+def _unwrap_presentation(el: ET.Element) -> ET.Element:
+    while _local(el.tag) in {"mrow", "mstyle", "mpadded"} and len(el) == 1:
+        el = el[0]
+    return el
+
+
+def _wrap(el: ET.Element, s: str) -> str:
+    """Keep atomic identifiers/numbers bare; group compound MathML operands."""
+    el = _unwrap_presentation(el)
+    atomic = _local(el.tag) in {"mi", "mn"} and _SIMPLE.fullmatch(s)
+    return s if atomic or _is_wrapped(s) else f"({s})"
 
 
 def _is_frac(el: ET.Element) -> bool:
-    """A fraction, possibly wrapped in single-child <mrow>s."""
-    while _local(el.tag) == "mrow" and len(el) == 1:
-        el = el[0]
-    return _local(el.tag) == "mfrac"
+    """A fraction, possibly inside presentation-only wrappers."""
+    return _local(_unwrap_presentation(el).tag) == "mfrac"
 
 
 def _math_children(el: ET.Element) -> list[str]:
@@ -79,14 +85,14 @@ def _math_to_text(el: ET.Element) -> str:
     if name == "msup" and len(kids) == 2:
         exponent = kids[1].strip()
         if exponent and all(ch in _PRIME_CHARS for ch in exponent):
-            return f"{_wrap(kids[0])}{exponent}"  # g'(x), not g^(')(x)
-        return f"{_wrap(kids[0])}^{_wrap(kids[1])}"
+            return f"{_wrap(el[0], kids[0])}{exponent}"  # g'(x), not g^(')(x)
+        return f"{_wrap(el[0], kids[0])}^{_wrap(el[1], kids[1])}"
     if name == "msub" and len(kids) == 2:
-        return f"{_wrap(kids[0])}_{_wrap(kids[1])}"
+        return f"{_wrap(el[0], kids[0])}_{_wrap(el[1], kids[1])}"
     if name == "msubsup" and len(kids) == 3:
-        return f"{_wrap(kids[0])}_{_wrap(kids[1])}^{_wrap(kids[2])}"
+        return f"{_wrap(el[0], kids[0])}_{_wrap(el[1], kids[1])}^{_wrap(el[2], kids[2])}"
     if name == "mfrac" and len(kids) == 2:
-        return f"{_wrap(kids[0])}/{_wrap(kids[1])}"
+        return f"{_wrap(el[0], kids[0])}/{_wrap(el[1], kids[1])}"
     if name == "msqrt":
         return f"sqrt({''.join(kids)})"
     if name == "mroot" and len(kids) == 2:
@@ -126,29 +132,65 @@ def _link_placeholder(link: ET.Element, refs: dict[str, str] | None) -> str:
     return f"[{word}]" if word else ""
 
 
-def _text_with_math(el: ET.Element, refs: dict[str, str] | None = None) -> str:
-    """Like "".join(el.itertext()) but each <math> is converted, not flattened."""
-    parts = [el.text or ""]
+class _MathText:
+    """Normalize XML text while retaining exact source-equation positions."""
+
+    def __init__(self):
+        self.parts: list[str] = []
+        self.length = 0
+        self.pending_space = False
+        self.equations: list[EquationSpan] = []
+
+    @property
+    def text(self) -> str:
+        return "".join(self.parts)
+
+    def append(self, text: str) -> None:
+        words = text.split()
+        if not words:
+            self.pending_space = self.pending_space or bool(text)
+            return
+        if self.length and (self.pending_space or text[0].isspace()):
+            self.parts.append(" ")
+            self.length += 1
+        normalized = " ".join(words)
+        self.parts.append(normalized)
+        self.length += len(normalized)
+        self.pending_space = text[-1].isspace()
+
+    def append_equation(self, text: str) -> None:
+        if text:
+            self.append(text)
+            self.equations.append(EquationSpan(text, self.length - len(text), self.length))
+
+
+def _text_with_math(el: ET.Element, refs: dict[str, str] | None = None,
+                    result: _MathText | None = None) -> _MathText:
+    """Render text and source equations into one normalized coordinate system."""
+    if result is None:
+        result = _MathText()
+    if el.tag == MATH_TAG:
+        result.append_equation(_linearize_math(el))
+        return result
+    result.append(el.text or "")
     for child in el:
-        if child.tag == MATH_TAG:
-            parts.append(_linearize_math(child))
-        elif _local(child.tag) == "link" and not "".join(child.itertext()).strip():
-            parts.append(_link_placeholder(child, refs))
+        if _local(child.tag) == "link" and not "".join(child.itertext()).strip():
+            result.append(_link_placeholder(child, refs))
         else:
-            parts.append(_text_with_math(child, refs))
-        parts.append(child.tail or "")
-    return "".join(parts)
+            _text_with_math(child, refs, result)
+        result.append(child.tail or "")
+    return result
 
 
-def _block_text(el: ET.Element, refs: dict[str, str] | None = None) -> tuple[str, list[str]]:
+def _block_text(el: ET.Element, refs: dict[str, str] | None = None) -> tuple[str, list[EquationSpan]]:
     """Plain text of a <para>/<equation>/<caption> block + equations found inside."""
-    equations = [eq for m in el.iter(MATH_TAG) if (eq := _linearize_math(m))]
-    return " ".join(_text_with_math(el, refs).split()), equations
+    result = _text_with_math(el, refs)
+    return result.text, result.equations
 
 
 def _title_text(el: ET.Element, refs: dict[str, str] | None = None) -> str:
     """Title text with any math converted (e.g. "Differentiating x^3")."""
-    return " ".join(_text_with_math(el, refs).split())
+    return _text_with_math(el, refs).text
 
 
 _BLOCKS = {"para", "equation"}
@@ -159,7 +201,7 @@ def _has_blocks(el: ET.Element) -> bool:
     return any(_local(d.tag) in _BLOCKS for d in el.iter() if d is not el)
 
 
-def _container_text(el: ET.Element, refs: dict[str, str] | None = None) -> tuple[str, list[str]]:
+def _container_text(el: ET.Element, refs: dict[str, str] | None = None) -> tuple[str, list[EquationSpan]]:
     """Text of a whole example/exercise/list/note/definition as ONE block.
 
     Walks every descendant in document order so a problem and its solution
@@ -167,14 +209,12 @@ def _container_text(el: ET.Element, refs: dict[str, str] | None = None) -> tuple
     List items become "- item" (many items are plain text, not paragraphs) and
     a definition's term comes first ("term: meaning").
     """
-    parts: list[str] = []
-    equations: list[str] = []
+    parts: list[tuple[str, list[EquationSpan]]] = []
 
     def leaf(node: ET.Element) -> None:
         text, eqs = _block_text(node, refs)
         if text:
-            parts.append(text)
-            equations.extend(eqs)
+            parts.append((text, eqs))
 
     def walk(node: ET.Element) -> None:
         for child in node:
@@ -184,19 +224,19 @@ def _container_text(el: ET.Element, refs: dict[str, str] | None = None) -> tuple
             if name in _BLOCKS:
                 leaf(child)
             elif name == "title":
-                title = _title_text(child, refs)
+                title, eqs = _block_text(child, refs)
                 if title:
-                    parts.append(title + ".")
+                    parts.append((title + ".", eqs))
             elif name == "caption":
                 text, eqs = _block_text(child, refs)
                 if text:
-                    parts.append(f"[Figure] {text}")
-                    equations.extend(eqs)
+                    prefix = "[Figure] "
+                    parts.append((prefix + text, [eq.shifted(len(prefix)) for eq in eqs]))
             elif name in {"problem", "solution"}:
-                parts.append(name.capitalize() + ":")
+                parts.append((name.capitalize() + ":", []))
                 walk(child)
             elif name == "item":
-                parts.append("-")
+                parts.append(("-", []))
                 mark = len(parts)
                 walk(child) if _has_blocks(child) else leaf(child)
                 if len(parts) == mark:
@@ -204,14 +244,19 @@ def _container_text(el: ET.Element, refs: dict[str, str] | None = None) -> tuple
             elif name == "term":
                 text, eqs = _block_text(child, refs)
                 if text:
-                    parts.append(text + ":")
+                    parts.append((text + ":", eqs))
             elif name in {"figure", "list"} or _has_blocks(child):
                 walk(child)
             else:
                 leaf(child)  # plain-text element such as a label
 
     walk(el)
-    return " ".join(parts), equations
+    equations: list[EquationSpan] = []
+    offset = 0
+    for text, eqs in parts:
+        equations.extend(equation.shifted(offset) for equation in eqs)
+        offset += len(text) + 1
+    return " ".join(text for text, _ in parts), equations
 
 
 # Authors sometimes leave a "Proof" <section> open and put the worked examples inside it,
@@ -232,7 +277,7 @@ def parse_cnxml_string(xml_str: str, module_id: str, book_id: str, source: str =
     ns = {"c": CNXML_NS, "md": MD_NS}
 
     title_el = root.find("c:title", ns)
-    title = (title_el.text or "").strip() if title_el is not None else module_id
+    title = _title_text(title_el) if title_el is not None else module_id
     meta_id_el = root.find("c:metadata/md:content-id", ns)
     if meta_id_el is not None and (meta_id_el.text or "").strip():
         module_id = meta_id_el.text.strip()
@@ -244,7 +289,7 @@ def parse_cnxml_string(xml_str: str, module_id: str, book_id: str, source: str =
     refs = {e.get("id"): _local(e.tag) for e in root.iter() if e.get("id")}
 
     # Walk content preserving section context: (section_path, block_text, equations)
-    blocks: list[tuple[str, str, list[str]]] = []
+    blocks: list[tuple[str, str, list[EquationSpan]]] = []
 
     def visit(parent: ET.Element, section: str) -> None:
         for child in parent:
@@ -266,7 +311,8 @@ def parse_cnxml_string(xml_str: str, module_id: str, book_id: str, source: str =
                 for cap in child.findall("c:caption", ns):
                     text, eqs = _block_text(cap, refs)
                     if text:
-                        blocks.append((section, f"[Figure] {text}", eqs))
+                        prefix = "[Figure] "
+                        blocks.append((section, prefix + text, [eq.shifted(len(prefix)) for eq in eqs]))
             elif name in {"list", "example", "exercise", "note", "definition", "rule"}:
                 text, eqs = _container_text(child, refs)
                 if text:
@@ -284,7 +330,9 @@ def parse_cnxml_string(xml_str: str, module_id: str, book_id: str, source: str =
     chunks: list[Chunk] = []
     for section, text, eqs in pack_blocks(blocks):
         pieces = [text] if len(text) <= MAX_CHARS else chunk_text(text, MAX_CHARS, OVERLAP)
-        for piece in pieces:
+        for i, piece in enumerate(pieces):
+            start = i * (MAX_CHARS - OVERLAP)
+            end = start + len(piece)
             chunks.append(
                 Chunk(
                     book_id=book_id,
@@ -292,7 +340,10 @@ def parse_cnxml_string(xml_str: str, module_id: str, book_id: str, source: str =
                     title=title,
                     section=section,
                     text=piece,
-                    equations=eqs,
+                    equations=list(dict.fromkeys(
+                        equation.text for equation in eqs
+                        if start <= equation.start and equation.end <= end
+                    )),
                     source=source,
                 )
             )

@@ -40,66 +40,36 @@ def test_describe_search():
     assert describe_search(None, "most_fields", 0.3) == "text only (match), demote exercises/glossary x0.3"
 
 
-def test_section_field_finds_chunks_the_text_alone_misses():
-    """Needs Docker ES: docker start es. Skipped otherwise."""
-    from elasticsearch import Elasticsearch
-
-    client = Elasticsearch("http://localhost:9200", request_timeout=2)
-    try:
-        up = client.ping()
-    except Exception:
-        up = False
-    if not up:
-        pytest.skip("ES not running at localhost:9200")
-
-    from search.index import bulk_index, create_index
+def test_section_field_finds_chunks_the_text_alone_misses(review_index):
+    from search.index import bulk_index
     from search.retrieve import get_documents
     from search.schemas import Chunk
 
-    index = "textbook-fields-test"
-    create_index(client, index=index, reset=True)
-    try:
-        chunks = [
-            Chunk("b", "m1", "Rules", "The Quotient Rule", "Example: differentiate f(x)=x^2/(x+1) step by step.", [], "osbooks"),
-            Chunk("b", "m2", "Misc", "Other", "Nothing relevant here.", [], "osbooks"),
-        ]
-        bulk_index(client, chunks, index=index)
-        client.indices.refresh(index=index)
-        assert get_documents("quotient rule", index=index, es=client) == []
-        hits = get_documents("quotient rule", index=index, es=client, fields=["text", "section^3"])
-        assert [h["module_id"] for h in hits] == ["m1"]
-    finally:
-        client.indices.delete(index=index)
+    client, index = review_index
+    chunks = [
+        Chunk("b", "m1", "Rules", "The Quotient Rule", "Example: differentiate f(x)=x^2/(x+1) step by step.", [], "osbooks"),
+        Chunk("b", "m2", "Misc", "Other", "Nothing relevant here.", [], "osbooks"),
+    ]
+    bulk_index(client, chunks, index=index)
+    client.indices.refresh(index=index)
+    assert get_documents("quotient rule", index=index, es=client) == []
+    hits = get_documents("quotient rule", index=index, es=client, fields=["text", "section^3"])
+    assert [h["module_id"] for h in hits] == ["m1"]
 
 
-def test_demoted_sections_rank_lower():
-    """Needs Docker ES: docker start es. Skipped otherwise."""
-    from elasticsearch import Elasticsearch
-
-    client = Elasticsearch("http://localhost:9200", request_timeout=2)
-    try:
-        up = client.ping()
-    except Exception:
-        up = False
-    if not up:
-        pytest.skip("ES not running at localhost:9200")
-
-    from search.index import bulk_index, create_index
+def test_demoted_sections_rank_lower(review_index):
+    from search.index import bulk_index
     from search.retrieve import get_documents
     from search.schemas import Chunk
 
-    index = "textbook-demote-test"
-    create_index(client, index=index, reset=True)
-    try:
-        same_text = "Find the derivative of the function."
-        chunks = [
-            Chunk("b", "m1", "T", "Exercises", same_text, [], "osbooks"),
-            Chunk("b", "m2", "T", "The Power Rule", same_text, [], "osbooks"),
-        ]
-        bulk_index(client, chunks, index=index)
-        client.indices.refresh(index=index)
-        hits = get_documents("derivative", index=index, es=client, demote=0.1)
-        assert [h["module_id"] for h in hits] == ["m2", "m1"]
-        assert hits[0]["score"] > hits[1]["score"]
-    finally:
-        client.indices.delete(index=index)
+    client, index = review_index
+    same_text = "Find the derivative of the function."
+    chunks = [
+        Chunk("b", "m1", "T", "Exercises", same_text, [], "osbooks"),
+        Chunk("b", "m2", "T", "The Power Rule", same_text, [], "osbooks"),
+    ]
+    bulk_index(client, chunks, index=index)
+    client.indices.refresh(index=index)
+    hits = get_documents("derivative", index=index, es=client, demote=0.1)
+    assert [h["module_id"] for h in hits] == ["m2", "m1"]
+    assert hits[0]["score"] > hits[1]["score"]

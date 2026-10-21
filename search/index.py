@@ -11,6 +11,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 
 from elasticsearch import Elasticsearch, helpers
@@ -24,8 +25,8 @@ INDEX_NAME = "textbook-chunks"
 # f' -> "f prime". These rewrites run only inside Elasticsearch's analyzer, for indexing and for
 # queries alike; the stored text that the LLM reads is not changed.
 MATH_CHAR_FILTERS = {
-    "math_squared": (r"\^2(?![0-9])", " squared "),
-    "math_cubed": (r"\^3(?![0-9])", " cubed "),
+    "math_squared": (r"\^2(?![0-9]|\.[0-9])", " squared "),
+    "math_cubed": (r"\^3(?![0-9]|\.[0-9])", " cubed "),
     "math_sqrt": (r"sqrt\(", " square root "),
     "math_prime": ("\u2032", " prime "),
 }
@@ -63,9 +64,14 @@ MAPPING = {
 }
 
 
-def get_client(url: str = "http://localhost:9200") -> Elasticsearch:
+def get_client(url: str | None = None) -> Elasticsearch:
     # No auth: matches docker run with xpack.security.enabled=false.
-    return Elasticsearch(url)
+    return Elasticsearch(url or os.environ.get("H2FLOW_ES_URL") or "http://localhost:9200")
+
+
+def add_connection_arguments(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--es-url", help="Elasticsearch URL (default: H2FLOW_ES_URL or http://localhost:9200)")
+    parser.add_argument("--index", default=INDEX_NAME, help="Elasticsearch index name")
 
 
 def create_index(es: Elasticsearch, index: str = INDEX_NAME, reset: bool = False) -> None:
@@ -106,6 +112,7 @@ def main() -> None:
     ap.add_argument("--outline", action="store_true", help="print chapter > module id + title and exit")
     ap.add_argument("--fixtures", action="store_true")
     ap.add_argument("--reset", action="store_true")
+    add_connection_arguments(ap)
     args = ap.parse_args()
 
     if args.list_books:
@@ -147,10 +154,11 @@ def main() -> None:
     else:
         raise SystemExit("pass --fixtures or --bundle <path>")
 
-    es = get_client()
-    create_index(es, reset=args.reset)
-    n = bulk_index(es, chunks)
-    print(f"indexed {n} chunks into {INDEX_NAME}")
+    with get_client(args.es_url) as es:
+        create_index(es, index=args.index, reset=args.reset)
+        n = bulk_index(es, chunks, index=args.index)
+        es.indices.refresh(index=args.index)
+    print(f"indexed {n} chunks into {args.index}")
 
 
 if __name__ == "__main__":

@@ -72,6 +72,8 @@ def _change(now: int | None, was: int | None) -> str:
 
 
 def main() -> None:
+    from .index import add_connection_arguments, get_client
+
     sys.stdout.reconfigure(errors="replace")  # never crash on a character the console can't show
     ap = argparse.ArgumentParser()
     ap.add_argument("--questions", default=DEFAULT_QUESTIONS)
@@ -81,6 +83,7 @@ def main() -> None:
     ap.add_argument("--fields", help='comma-separated, e.g. "text,section^3,title^2" (default: text only)')
     ap.add_argument("--match-type", default="most_fields", choices=["most_fields", "best_fields"])
     ap.add_argument("--demote", type=float, help="multiply scores of Exercises/Glossary chunks by this (0 to 1)")
+    add_connection_arguments(ap)
     args = ap.parse_args()
 
     with open(args.questions, encoding="utf-8") as f:
@@ -97,7 +100,14 @@ def main() -> None:
     desc = describe_search(fields, args.match_type, args.demote)
 
     try:
-        results = run_eval(questions, lambda query, k: get_documents(query, top_k=k, fields=fields, match_type=args.match_type, demote=args.demote), max(args.top_k, max(KS)))
+        with get_client(args.es_url) as es:
+            results = run_eval(
+                questions,
+                lambda query, k: get_documents(query, top_k=k, index=args.index, es=es,
+                                               fields=fields, match_type=args.match_type,
+                                               demote=args.demote),
+                max(args.top_k, max(KS)),
+            )
     except Exception as exc:
         raise SystemExit(f"search failed ({exc.__class__.__name__}). Is Elasticsearch running and the index loaded?")
 

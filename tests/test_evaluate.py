@@ -24,7 +24,10 @@ def test_summarize_counts_and_mrr():
 
 
 def test_run_eval_uses_the_search_function():
-    questions = [{"question": "q1", "expect": ["m2"]}, {"question": "q2", "expect": ["m9"]}]
+    questions = [
+        {"question": "q1", "expect": ["m2"]},
+        {"question": "q2", "expect": ["m9"]},
+    ]
     fake = lambda query, k: hits("m1", "m2") if query == "q1" else hits("m1")
     results = run_eval(questions, fake, top_k=5)
     assert [r["rank"] for r in results] == [2, None]
@@ -34,4 +37,7 @@ def test_starter_questions_file_is_well_formed():
     with open("eval/questions.json", encoding="utf-8") as f:
         questions = json.load(f)
     assert len(questions) >= 10
-    assert all(q["question"] and q["expect"] and all(m.startswith("m") for m in q["expect"]) for q in questions)
+    assert all(
+        q["question"] and q["expect"] and all(m.startswith("m") for m in q["expect"])
+        for q in questions
+    )

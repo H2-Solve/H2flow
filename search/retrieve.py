@@ -13,7 +13,7 @@ import argparse
 
 from elasticsearch import Elasticsearch
 
-from .index import INDEX_NAME, get_client
+from .index import INDEX_NAME, add_connection_arguments, get_client
 
 
 def parse_fields(spec: str | None) -> list[str] | None:
@@ -54,12 +54,16 @@ def get_documents(query: str, top_k: int = 5, index: str = INDEX_NAME,
                   es: Elasticsearch | None = None, fields: list[str] | None = None,
                   match_type: str = "most_fields", demote: float | None = None) -> list[dict]:
     """Query ES and return [{text, book_id, title, module_id, section, excerpt, score}]."""
-    es = es or get_client()
-    res = es.search(
-        index=index,
-        size=top_k,
-        query=build_query(query, fields, match_type, demote),
-    )
+    client = es if es is not None else get_client()
+    try:
+        res = client.search(
+            index=index,
+            size=top_k,
+            query=build_query(query, fields, match_type, demote),
+        )
+    finally:
+        if es is None:
+            client.close()
     out: list[dict] = []
     for hit in res["hits"]["hits"]:
         src = hit["_source"]
@@ -85,9 +89,12 @@ def main() -> None:
     ap.add_argument("--fields", help='comma-separated, e.g. "text,section^3,title^2" (default: text only)')
     ap.add_argument("--match-type", default="most_fields", choices=["most_fields", "best_fields"])
     ap.add_argument("--demote", type=float, help="multiply scores of Exercises/Glossary chunks by this (0 to 1)")
+    add_connection_arguments(ap)
     args = ap.parse_args()
-    docs = get_documents(args.query, top_k=args.top_k, fields=parse_fields(args.fields),
-                         match_type=args.match_type, demote=args.demote)
+    with get_client(args.es_url) as es:
+        docs = get_documents(args.query, top_k=args.top_k, index=args.index, es=es,
+                             fields=parse_fields(args.fields), match_type=args.match_type,
+                             demote=args.demote)
     for i, d in enumerate(docs):
         print(f"--- hit {i + 1} score={d['score']:.2f} {d['module_id']} / {d['section']}")
         print(d["excerpt"][:400])
