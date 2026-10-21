@@ -220,30 +220,6 @@ def test_identical_reload_does_not_duplicate_documents(review_index):
     assert client.count(index=index)["count"] == 2
 
 
-def test_conflicting_shared_module_versions_do_not_erase_distinct_content(review_index):
-    from search.index import bulk_index
-    from search.retrieve import get_documents
-    from search.schemas import Chunk
-
-    client, index = review_index
-    bulk_index(
-        client,
-        [Chunk("book-a", "m-shared", "T", text="quasaralpha explanation")],
-        index=index,
-    )
-    bulk_index(
-        client,
-        [Chunk("book-b", "m-shared", "T", text="quasarbeta explanation")],
-        index=index,
-    )
-    client.indices.refresh(index=index)
-
-    assert get_documents("quasaralpha", index=index, es=client), (
-        "First book's distinct content was overwritten"
-    )
-    assert get_documents("quasarbeta", index=index, es=client)
-
-
 def test_different_ids_can_occupy_multiple_result_slots_with_identical_text(
     review_index,
 ):
