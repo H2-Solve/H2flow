@@ -16,6 +16,7 @@ class Chunk:
     text: str = ""    # plain text, 300-800 chars after chunking
     equations: list[str] = field(default_factory=list)  # MathML-linearized strings found in this chunk
     source: str = "osbooks"  # "osbooks" | "philschatz"
+    chapter: str = ""  # chapter title from the book's collection file, e.g. "Functions and Graphs"
 
     def to_es_doc(self) -> dict:
         d = asdict(self)
