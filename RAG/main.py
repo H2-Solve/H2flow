@@ -27,6 +27,43 @@ Question:
     )
 ])
 
+# TODO: Maybe use solver_llm and verification_prompt to implement RAG with verification
+# LLM for generating the step-by-step RAG explanation
+solver_llm = ChatOllama(
+    model="gemma3:4b",
+    temperature=0.2 # Slight temperature allows variation on retry attempts
+)
+
+verification_prompt = ChatPromptTemplate.from_messages([
+    (
+        "system",
+        """
+        You are a specialized math question-answering assistant.
+        Use the provided textbook context to explain step-by-step how to solve the user's question.
+        For each step, shortly (1-2 sentences) explain your reasoning using relevant formulas from the context.
+
+        CRITICAL INSTRUCTION:
+        The verified ground-truth mathematical answer to this problem is:
+        {ground_truth}
+
+        Your step-by-step work MUST lead to this exact result.
+        At the very end of your response, on a new line, write ONLY:
+        FINAL_ANSWER: <your final expression in Python/SymPy syntax>
+        {retry_feedback}
+        """
+    ),
+    (
+        "human",
+        """
+        Context:
+        {context}
+
+        Question:
+        {question}
+        """
+    )
+])
+
 
 def get_documents(query):
     """
@@ -94,6 +131,13 @@ def rag(query):
     answer = generate_answer(prompt)
 
     return answer
+
+
+# TODO: Implement the full RAG with SymPy verification and retry loops
+#       and as a single function for future API implementation)
+def rag_with_verification(question: str, max_retries: int = 3) -> str:
+    """Full pipeline: Problem Intent Extraction -> SymPy Truth -> RAG -> Verification & Retry"""
+    return ""
 
 
 print(rag("What is the area of a circle with radius 5?").content)
