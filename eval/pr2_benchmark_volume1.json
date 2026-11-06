@@ -1,0 +1,1172 @@
+{
+  "pr_head": "04d51b4713cb05f429377f19dbc028263c162dca",
+  "dataset_commit": "8dbc2ce19e804924b2517b89ac72ee45be949d15",
+  "selected_book": "calculus-volume-1",
+  "machine": {
+    "os": "Darwin",
+    "architecture": "arm64",
+    "logical_cpus": 8
+  },
+  "per_book": {
+    "calculus-volume-1": {
+      "modules": 55,
+      "chunks": 1607
+    }
+  },
+  "missing_modules": [],
+  "failed_modules": [],
+  "unique_modules": 55,
+  "shared_module_ids": 0,
+  "chunks": 1607,
+  "text_characters": 1109628,
+  "identical_normalized_chunk_excess": 0,
+  "parse_seconds": [
+    0.5562257920391858,
+    0.5476411669515073,
+    0.5500575411133468
+  ],
+  "parse_median_seconds": 0.5500575411133468,
+  "parse_python_peak_mib": 6.256409645080566,
+  "elasticsearch_version": "8.15.0",
+  "build_actions_seconds": 0.04989229189231992,
+  "build_actions_additional_python_peak_mib": 2.149068832397461,
+  "bulk_index_seconds": 1.0481393339578062,
+  "bulk_documents_per_second": 1533.1931050921626,
+  "refresh_seconds": 0.0609783330000937,
+  "indexed_documents": 1607,
+  "first_pass_latency": {
+    "requests": 36,
+    "p50_ms": 7.918499992229044,
+    "p95_ms": 30.65000008791685,
+    "max_ms": 36.79308295249939
+  },
+  "tuning_module_metrics": {
+    "hit@1": 20,
+    "hit@3": 24,
+    "hit@5": 24,
+    "mrr": 0.8024691358024691,
+    "n": 27
+  },
+  "holdout_module_metrics": {
+    "hit@1": 4,
+    "hit@3": 5,
+    "hit@5": 6,
+    "mrr": 0.5092592592592592,
+    "n": 9
+  },
+  "questions_with_duplicate_top5_text": 0,
+  "results": [
+    {
+      "question": "power rule",
+      "expected": [
+        "m53575"
+      ],
+      "rank": 1,
+      "top_hits": [
+        {
+          "module_id": "m53575",
+          "book_id": "calculus-volume-1",
+          "title": "Differentiation Rules",
+          "section": "The Quotient Rule",
+          "excerpt": "Problem: Using the Extended Power Rule and the Constant Multiple Rule. Use the extended power rule and the constant multiple rule to find the derivative of f(x)=6/(x^2). Solution: It may seem tempting to use the quotient rule to find this derivative, and it would certainly not be incorrect to do so. However, it is far easier to differentiate this function by first rewriting it as f(x)=6x^(\u22122). f\u2032(x) =d/dx(6/(x^2))=d/dx(6x^(\u22122)) Rewrite 6/(x^2) as 6x^(\u22122).; =6d/dx(x^(\u22122)) Apply the constant multi"
+        },
+        {
+          "module_id": "m53575",
+          "book_id": "calculus-volume-1",
+          "title": "Differentiation Rules",
+          "section": "The Power Rule",
+          "excerpt": "As we shall see, the procedure for finding the derivative of the general form f(x)=x^n is very similar. Although it is often unwise to draw general conclusions from specific examples, we note that when we differentiate f(x)=x^3, the power on x becomes the coefficient of x^2 in the derivative and the power on x in the derivative decreases by 1. The following theorem states that the power rule holds for all positive integer powers of x. We will eventually extend this result to negative integer pow"
+        },
+        {
+          "module_id": "m53633",
+          "book_id": "calculus-volume-1",
+          "title": "Integration Formulas and the Net Change Theorem",
+          "section": "Basic Integration Formulas",
+          "excerpt": "Recall the integration formulas given in the table in Antiderivatives and the rule on properties of definite integrals. Let\u2019s look at a few examples of how to apply these rules.\nProblem: Integrating a Function Using the Power Rule. Use the power rule to integrate the function (\u222b)_1^4sqrt(t)(1+t)dt. Solution: The first step is to rewrite the function and simplify it so we can apply the power rule: (\u222b)_1^4sqrt(t)(1+t)dt =(\u222b)_1^4t^(1/2)(1+t)dt; =(\u222b)_1^4(t^(1/2)+t^(3/2))dt. Now apply the power rule:"
+        }
+      ]
+    },
+    {
+      "question": "quotient rule",
+      "expected": [
+        "m53575"
+      ],
+      "rank": 1,
+      "top_hits": [
+        {
+          "module_id": "m53575",
+          "book_id": "calculus-volume-1",
+          "title": "Differentiation Rules",
+          "section": "The Quotient Rule",
+          "excerpt": "The proof of the quotient rule is very similar to the proof of the product rule, so it is omitted here. Instead, we apply this new rule for finding derivatives in the next example.\nProblem: Applying the Quotient Rule. Use the quotient rule to find the derivative of k(x)=(5x^2)/(4x+3). Solution: Let f(x)=5x^2 and g(x)=4x+3. Thus, f\u2032(x)=10x and g\u2032(x)=4. Substituting into the quotient rule, we have k\u2032(x)=(f\u2032(x)g(x)\u2212g\u2032(x)f(x))/((g(x))^2)=(10x(4x+3)\u22124(5x^2))/((4x+3)^2). Simplifying, we obtain k\u2032(x)=("
+        },
+        {
+          "module_id": "m53578",
+          "book_id": "calculus-volume-1",
+          "title": "Derivatives of Trigonometric Functions",
+          "section": "Derivatives of Other Trigonometric Functions",
+          "excerpt": "Since the remaining four trigonometric functions may be expressed as quotients involving sine, cosine, or both, we can use the quotient rule to find formulas for their derivatives.\nProblem: The Derivative of the Tangent Function. Find the derivative of f(x)=tan x. Solution: Start by expressing tan x as the quotient of sin x and cos x: f(x)=tan x=(sin x)/(cos x). Now apply the quotient rule to obtain f\u2032(x)=(cos x cos x\u2212(\u2212sin x)sin x)/((cos x)^2). Simplifying, we obtain f\u2032(x)=(cos^2x+( sin)^2x)/(c"
+        },
+        {
+          "module_id": "m53586",
+          "book_id": "calculus-volume-1",
+          "title": "Derivatives of Exponential and Logarithmic Functions",
+          "section": "Derivative of the Exponential Function",
+          "excerpt": "Problem: Derivative of an Exponential Function. Find the derivative of f(x)=e^(tan(2x)). Solution: Using the derivative formula and the chain rule, f\u2032(x) =e^(tan (2x))d/dx(tan (2x)); =e^(tan(2x))sec^2(2x)\u00b72.\nProblem: Combining Differentiation Rules. Find the derivative of y=(e^(x^2))/x. Solution: Use the derivative of the natural exponential function, the quotient rule, and the chain rule. y\u2032 =((e^(x^2)\u00b72)x\u00b7x\u22121\u00b7e^(x^2))/(x^2) Apply the quotient rule.; =(e^(x^2)(2x^2\u22121))/(x^2) Simplify.\nProblem: "
+        }
+      ]
+    },
+    {
+      "question": "constant multiple rule",
+      "expected": [
+        "m53575"
+      ],
+      "rank": 1,
+      "top_hits": [
+        {
+          "module_id": "m53575",
+          "book_id": "calculus-volume-1",
+          "title": "Differentiation Rules",
+          "section": "The Quotient Rule",
+          "excerpt": "Problem: Using the Extended Power Rule and the Constant Multiple Rule. Use the extended power rule and the constant multiple rule to find the derivative of f(x)=6/(x^2). Solution: It may seem tempting to use the quotient rule to find this derivative, and it would certainly not be incorrect to do so. However, it is far easier to differentiate this function by first rewriting it as f(x)=6x^(\u22122). f\u2032(x) =d/dx(6/(x^2))=d/dx(6x^(\u22122)) Rewrite 6/(x^2) as 6x^(\u22122).; =6d/dx(x^(\u22122)) Apply the constant multi"
+        },
+        {
+          "module_id": "m53575",
+          "book_id": "calculus-volume-1",
+          "title": "Differentiation Rules",
+          "section": "Combining Differentiation Rules",
+          "excerpt": "Problem: Combining Differentiation Rules. For k(x)=3h(x)+x^2g(x), find k\u2032(x). Solution: Finding this derivative requires the sum rule, the constant multiple rule, and the product rule. k\u2032(x) =d/dx(3h(x)+x^2g(x))=d/dx(3h(x))+d/dx(x^2g(x)) Apply the sum rule.; =3d/dx(h(x))+((d/dx)(x^2)g(x)+(d/dx)(g(x))x^2) Apply the constant multiple rule to; differentiate 3h(x) and the product; rule to differentiate x^2g(x).; =3h'(x)+2xg(x)+x^2g'(x)"
+        },
+        {
+          "module_id": "m53575",
+          "book_id": "calculus-volume-1",
+          "title": "Differentiation Rules",
+          "section": "The Sum, Difference, and Constant Multiple Rules",
+          "excerpt": "Sum, Difference, and Constant Multiple Rules. Let f(x) and g(x) be differentiable functions and k be a constant. Then each of the following equations holds. Sum Rule. The derivative of the sum of a function f and a function g is the same as the sum of the derivative of f and the derivative of g. (d/dx)(f(x)+g(x))=(d/dx)(f(x))+(d/dx)(g(x)); that is, for j(x)=f(x)+g(x),j\u2032(x)=f\u2032(x)+g\u2032(x). Difference Rule. The derivative of the difference of a function f and a function g is the same as the differenc"
+        }
+      ]
+    },
+    {
+      "question": "chain rule",
+      "expected": [
+        "m53581"
+      ],
+      "rank": 1,
+      "top_hits": [
+        {
+          "module_id": "m53581",
+          "book_id": "calculus-volume-1",
+          "title": "The Chain Rule",
+          "section": "Composites of Three or More Functions",
+          "excerpt": "We can now combine the chain rule with other rules for differentiating functions, but when we are differentiating the composition of three or more functions, we need to apply the chain rule more than once. If we look at this situation in general terms, we can generate a formula, but we do not need to remember it, as we can simply apply the chain rule multiple times.\nIn general terms, first we let\nk(x)=h(f(g(x))).\nThen, applying the chain rule once we obtain\nk\u2032(x)=(d/dx)(h(f(g(x)))=h\u2032(f(g(x)))\u00b7(d"
+        },
+        {
+          "module_id": "m53581",
+          "book_id": "calculus-volume-1",
+          "title": "The Chain Rule",
+          "section": "Combining the Chain Rule with Other Rules",
+          "excerpt": "Problem: Combining the Chain Rule with the Product Rule. Find the derivative of h(x)=(2x+1)^5(3x\u22122)^7. Solution: First apply the product rule, then apply the chain rule to each term of the product. h\u2032(x) =d/dx((2x+1)^5)\u00b7(3x\u22122)^7+d/dx((3x\u22122)^7)\u00b7(2x+1)^5 Apply the product rule.; =5(2x+1)^4\u00b72\u00b7(3x\u22122)^7+7(3x\u22122)^6\u00b73\u00b7(2x+1)^5 Apply the chain rule.; =10(2x+1)^4(3x\u22122)^7+21(3x\u22122)^6(2x+1)^5 Simplify.; =(2x+1)^4(3x\u22122)^6(10(3x\u22122)+21(2x+1)) Factor out (2x+1)^4(3x\u22122)^6.; =(2x+1)^4(3x\u22122)^6(72x+1) Simplify.\nProb"
+        },
+        {
+          "module_id": "m53581",
+          "book_id": "calculus-volume-1",
+          "title": "The Chain Rule",
+          "section": "Glossary",
+          "excerpt": "chain rule: the chain rule defines the derivative of a composite function as the derivative of the outer function evaluated at the inner function times the derivative of the inner function"
+        }
+      ]
+    },
+    {
+      "question": "second derivative test",
+      "expected": [
+        "m53613"
+      ],
+      "rank": 1,
+      "top_hits": [
+        {
+          "module_id": "m53613",
+          "book_id": "calculus-volume-1",
+          "title": "Derivatives and the Shape of a Graph",
+          "section": "The Second Derivative Test",
+          "excerpt": "Problem: Using the Second Derivative Test. Use the second derivative to find the location of all local extrema for f(x)=x^5\u22125x^3. Solution: To apply the second derivative test, we first need to find critical points c where f\u2032(c)=0. The derivative is f\u2032(x)=5x^4\u221215x^2. Therefore, f\u2032(x)=5x^4\u221215x^2=5x^2(x^2\u22123)=0 when x=0,\u00b1sqrt(3). To determine whether f has local extrema at any of these points, we need to evaluate the sign of f\u2033 at these points. The second derivative is f\u2033(x)=20x^3\u221230x=10x(2x^2\u22123). "
+        },
+        {
+          "module_id": "m53613",
+          "book_id": "calculus-volume-1",
+          "title": "Derivatives and the Shape of a Graph",
+          "section": "The Second Derivative Test",
+          "excerpt": "The first derivative test provides an analytical tool for finding local extrema, but the second derivative can also be used to locate extreme values. Using the second derivative can sometimes be a simpler method than using the first derivative."
+        },
+        {
+          "module_id": "m53613",
+          "book_id": "calculus-volume-1",
+          "title": "Derivatives and the Shape of a Graph",
+          "section": "Glossary",
+          "excerpt": "first derivative test: let f be a continuous function over an interval I containing a critical point c such that f is differentiable over I except possibly at c; if f\u2032 changes sign from positive to negative as x increases through c, then f has a local maximum at c; if f\u2032 changes sign from negative to positive as x increases through c, then f has a local minimum at c; if f\u2032 does not change sign as x increases through c, then f does not have a local extremum at c\ninflection point: if f is continuo"
+        }
+      ]
+    },
+    {
+      "question": "optimization problems closed bounded interval",
+      "expected": [
+        "m53614"
+      ],
+      "rank": 1,
+      "top_hits": [
+        {
+          "module_id": "m53614",
+          "book_id": "calculus-volume-1",
+          "title": "Applied Optimization Problems",
+          "section": "Exercises",
+          "excerpt": "For the following exercises, answer by proof, counterexample, or explanation.\nProblem: When you find the maximum for an optimization problem, why do you need to check the sign of the derivative around the critical points? Solution: The critical points can be the minima, maxima, or neither.\nProblem: Why do you need to check the endpoints for optimization problems?\nProblem: True or False. For every continuous nonlinear function, you can find the value x that maximizes the function. Solution: False"
+        },
+        {
+          "module_id": "m53614",
+          "book_id": "calculus-volume-1",
+          "title": "Applied Optimization Problems",
+          "section": "Glossary",
+          "excerpt": "optimization problems: problems that are solved by finding the maximum or minimum value of a function"
+        },
+        {
+          "module_id": "m53614",
+          "book_id": "calculus-volume-1",
+          "title": "Applied Optimization Problems",
+          "section": "Solving Optimization Problems over a Closed, Bounded Interval",
+          "excerpt": "Problem: Determine the maximum area if we want to make the same rectangular garden as in [Figure], but we have 200 ft of fencing. Solution: The maximum area is 5000( ft)^2. Hint. We need to maximize the function A(x)=200x\u22122x^2 over the interval [0,100].\nNow let\u2019s look at a general strategy for solving optimization problems similar to [Example]."
+        }
+      ]
+    },
+    {
+      "question": "work done by a force",
+      "expected": [
+        "m53648"
+      ],
+      "rank": 1,
+      "top_hits": [
+        {
+          "module_id": "m53648",
+          "book_id": "calculus-volume-1",
+          "title": "Physical Applications",
+          "section": "Exercises",
+          "excerpt": "For the following exercises, find the work done.\nProblem: Find the work done when a constant force F=12 lb moves a chair from x=0.9 to x=1.1 ft.\nProblem: How much work is done when a person lifts a 50 lb box of comics onto a truck that is 3 ft off the ground? Solution: 150 ft-lb\nProblem: What is the work done lifting a 20 kg child from the floor to a height of 2 m? (Note that a mass of1 kg weighs 9.8 N near the surface of the Earth.)\nProblem: Find the work done when you push a box along the floo"
+        },
+        {
+          "module_id": "m53648",
+          "book_id": "calculus-volume-1",
+          "title": "Physical Applications",
+          "section": "Work Done by a Force",
+          "excerpt": "Suppose we have a variable force F(x) that moves an object in a positive direction along the x-axis from point a to point b. To calculate the work done, we partition the interval [a,b] and estimate the work done over each subinterval. So, for i=0,1,2,\u2026,n, let P={x_i} be a regular partition of the interval [a,b], and for i=1,2,\u2026,n, choose an arbitrary point x_i^(*)\u2208[x_(i\u22121),x_i]. To calculate the work done to move an object from point x_(i\u22121) to point x_i, we assume the force is roughly constant "
+        },
+        {
+          "module_id": "m53648",
+          "book_id": "calculus-volume-1",
+          "title": "Physical Applications",
+          "section": "Work Done by a Force",
+          "excerpt": "Problem: The Work Required to Stretch or Compress a Spring. Suppose it takes a force of 10 N (in the negative direction) to compress a spring 0.2 m from the equilibrium position. How much work is done to stretch the spring 0.5 m from the equilibrium position? Solution: First find the spring constant, k. When x=\u22120.2, we know F(x)=\u221210, so F(x) = kx; \u221210 = k(\u22120.2); k = 50 and F(x)=50x. Then, to calculate work, we integrate the force function, obtaining W=(\u222b)_a^bF(x)dx=(\u222b)_0^0.550x dx=(25x^2|)_0^0.5"
+        }
+      ]
+    },
+    {
+      "question": "domain of a function",
+      "expected": [
+        "m53477"
+      ],
+      "rank": 2,
+      "top_hits": [
+        {
+          "module_id": "m53480",
+          "book_id": "calculus-volume-1",
+          "title": "Inverse Functions",
+          "section": "Finding a Function\u2019s Inverse > Restricting Domains",
+          "excerpt": "As we have seen, f(x)=x^2 does not have an inverse function because it is not one-to-one. However, we can choose a subset of the domain of f such that the function is one-to-one. This subset is called a restricted domain. By restricting the domain of f, we can define a new function g such that the domain of g is the restricted domain of f and g(x)=f(x) for all x in the domain of g. Then we can define an inverse function for g on that domain. For example, since f(x)=x^2 is one-to-one on the inter"
+        },
+        {
+          "module_id": "m53477",
+          "book_id": "calculus-volume-1",
+          "title": "Review of Functions",
+          "section": "Functions",
+          "excerpt": "Every function has a domain. However, sometimes a function is described by an equation, as in f(x)=x^2, with no specific domain given. In this case, the domain is taken to be the set of all real numbers, x, for which f(x) is a real number. For example, since any real number can be squared, if no other domain is specified, we consider the domain of f(x)=x^2 to be the set of all real numbers. On the other hand, the square root function f(x)=sqrt(x) gives a real output only if x is nonnegative. The"
+        },
+        {
+          "module_id": "m53477",
+          "book_id": "calculus-volume-1",
+          "title": "Review of Functions",
+          "section": "Combining Functions > Function Composition",
+          "excerpt": "Definition. Consider the function f with domain A and range B, and the function g with domain D and range E. If B is a subset of D, then the composite function (g\u2218f)(x) is the function with domain A such that (g\u2218f)(x)=g(f(x)).\nA composite function g\u2218f can be viewed in two steps. First, the function f maps each input x in the domain of f to its output f(x) in the range of f. Second, since the range of f is a subset of the domain of g, the output f(x) is an element in the domain of g, and therefor"
+        }
+      ]
+    },
+    {
+      "question": "derivative of the exponential function",
+      "expected": [
+        "m53586"
+      ],
+      "rank": 1,
+      "top_hits": [
+        {
+          "module_id": "m53586",
+          "book_id": "calculus-volume-1",
+          "title": "Derivatives of Exponential and Logarithmic Functions",
+          "section": "Derivative of the Exponential Function",
+          "excerpt": "Problem: Derivative of an Exponential Function. Find the derivative of f(x)=e^(tan(2x)). Solution: Using the derivative formula and the chain rule, f\u2032(x) =e^(tan (2x))d/dx(tan (2x)); =e^(tan(2x))sec^2(2x)\u00b72.\nProblem: Combining Differentiation Rules. Find the derivative of y=(e^(x^2))/x. Solution: Use the derivative of the natural exponential function, the quotient rule, and the chain rule. y\u2032 =((e^(x^2)\u00b72)x\u00b7x\u22121\u00b7e^(x^2))/(x^2) Apply the quotient rule.; =(e^(x^2)(2x^2\u22121))/(x^2) Simplify.\nProblem: "
+        },
+        {
+          "module_id": "m53635",
+          "book_id": "calculus-volume-1",
+          "title": "Integrals Involving Exponential and Logarithmic Functions",
+          "section": "Integrals of Exponential Functions",
+          "excerpt": "The exponential function is perhaps the most efficient function in terms of the operations of calculus. The exponential function, y=e^x, is its own derivative and its own integral.\nRule: Integrals of Exponential Functions. Exponential functions can be integrated using the following formulas. \u222be^xdx = e^x+C; \u222ba^xdx = (a^x)/(ln a)+C\nProblem: Finding an Antiderivative of an Exponential Function. Find the antiderivative of the exponential function e\u2212x. Solution: Use substitution, setting u=\u2212x, and t"
+        },
+        {
+          "module_id": "m53635",
+          "book_id": "calculus-volume-1",
+          "title": "Integrals Involving Exponential and Logarithmic Functions",
+          "section": "Integrals of Exponential Functions",
+          "excerpt": "As mentioned at the beginning of this section, exponential functions are used in many real-life applications. The number e is often associated with compounded or accelerating growth, as we have seen in earlier sections about the derivative. Although the derivative represents a rate of change or a growth rate, the integral represents the total change or the total growth. Let\u2019s look at an example in which integration of an exponential function solves a common business application."
+        }
+      ]
+    },
+    {
+      "question": "derivative of x squared",
+      "expected": [
+        "m53575"
+      ],
+      "rank": 1,
+      "top_hits": [
+        {
+          "module_id": "m53575",
+          "book_id": "calculus-volume-1",
+          "title": "Differentiation Rules",
+          "section": "The Sum, Difference, and Constant Multiple Rules",
+          "excerpt": "Problem: Applying the Constant Multiple Rule. Find the derivative of g(x)=3x^2 and compare it to the derivative of f(x)=x^2. Solution: We use the power rule directly: g\u2032(x)=(d/dx)(3x^2)=3(d/dx)(x^2)=3(2x)=6x. Since f(x)=x^2 has derivative f\u2032(x)=2x, we see that the derivative of g(x) is 3 times the derivative of f(x). This relationship is illustrated in [Figure]. [Figure] The derivative of g(x) is 3 times the derivative of f(x)."
+        },
+        {
+          "module_id": "m53586",
+          "book_id": "calculus-volume-1",
+          "title": "Derivatives of Exponential and Logarithmic Functions",
+          "section": "Derivative of the Exponential Function",
+          "excerpt": "Problem: Derivative of an Exponential Function. Find the derivative of f(x)=e^(tan(2x)). Solution: Using the derivative formula and the chain rule, f\u2032(x) =e^(tan (2x))d/dx(tan (2x)); =e^(tan(2x))sec^2(2x)\u00b72.\nProblem: Combining Differentiation Rules. Find the derivative of y=(e^(x^2))/x. Solution: Use the derivative of the natural exponential function, the quotient rule, and the chain rule. y\u2032 =((e^(x^2)\u00b72)x\u00b7x\u22121\u00b7e^(x^2))/(x^2) Apply the quotient rule.; =(e^(x^2)(2x^2\u22121))/(x^2) Simplify.\nProblem: "
+        },
+        {
+          "module_id": "m53578",
+          "book_id": "calculus-volume-1",
+          "title": "Derivatives of Trigonometric Functions",
+          "section": "Derivatives of the Sine and Cosine Functions",
+          "excerpt": "Problem: Differentiating a Function Containing sin x. Find the derivative of f(x)=5x^3sin x. Solution: Using the product rule, we have f\u2032(x) =d/dx(5x^3)\u00b7sin x+d/dx(sin x)\u00b75x^3; =15x^2\u00b7sin x+cos x\u00b75x^3. After simplifying, we obtain f\u2032(x)=15x^2sin x+5x^3cos x.\nProblem: Find the derivative of f(x)=sin x cos x. Solution: f\u2032(x)=cos^2x\u2212sin^2x Hint. Don\u2019t forget to use the product rule.\nProblem: Finding the Derivative of a Function Containing cos x. Find the derivative of g(x)=(cos x)/(4x^2). Solution:"
+        }
+      ]
+    },
+    {
+      "question": "how do I differentiate a quotient of two functions",
+      "expected": [
+        "m53575"
+      ],
+      "rank": 3,
+      "top_hits": [
+        {
+          "module_id": "m53581",
+          "book_id": "calculus-volume-1",
+          "title": "The Chain Rule",
+          "section": "",
+          "excerpt": "We have seen the techniques for differentiating basic functions (x^n,sin x,cos x,etc.) as well as sums, differences, products, quotients, and constant multiples of these functions. However, these techniques do not allow us to differentiate compositions of functions, such as h(x)=sin(x^3) or k(x)=sqrt(3x^2+1). In this section, we study the rule for finding the derivative of the composition of two or more functions."
+        },
+        {
+          "module_id": "m53495",
+          "book_id": "calculus-volume-1",
+          "title": "Defining the Derivative",
+          "section": "Tangent Lines",
+          "excerpt": "m_sec=(f(a+h)\u2212f(a))/(a+h\u2212a)=(f(a+h)\u2212f(a))/h.\nDefinition. Let f be a function defined on an interval I containing a. If x\u2260a is in I, then Q=(f(x)\u2212f(a))/(x\u2212a) is a difference quotient. Also, if h\u22600 is chosen so that a+h is in I, then Q=(f(a+h)\u2212f(a))/h is a difference quotient with increment h.\nView the development of the derivative with this applet.\nThese two expressions for calculating the slope of a secant line are illustrated in [Figure]. We will see that each of these two methods for finding t"
+        },
+        {
+          "module_id": "m53575",
+          "book_id": "calculus-volume-1",
+          "title": "Differentiation Rules",
+          "section": "The Quotient Rule",
+          "excerpt": "Problem: Using the Extended Power Rule and the Constant Multiple Rule. Use the extended power rule and the constant multiple rule to find the derivative of f(x)=6/(x^2). Solution: It may seem tempting to use the quotient rule to find this derivative, and it would certainly not be incorrect to do so. However, it is far easier to differentiate this function by first rewriting it as f(x)=6x^(\u22122). f\u2032(x) =d/dx(6/(x^2))=d/dx(6x^(\u22122)) Rewrite 6/(x^2) as 6x^(\u22122).; =6d/dx(x^(\u22122)) Apply the constant multi"
+        }
+      ]
+    },
+    {
+      "question": "what is the derivative of e to the x",
+      "expected": [
+        "m53586"
+      ],
+      "rank": 1,
+      "top_hits": [
+        {
+          "module_id": "m53586",
+          "book_id": "calculus-volume-1",
+          "title": "Derivatives of Exponential and Logarithmic Functions",
+          "section": "Chapter Review Exercises",
+          "excerpt": "Find the following derivatives of various orders.\nProblem: First derivative of y=x ln (x) cos x Solution: cos x\u00b7(ln x+1)\u2212x ln (x) sin x\nProblem: Third derivative of y=(3x+2)^2\nProblem: Second derivative of y=4^x+x^2sin (x) Solution: 4^x(ln 4)^2+2 sin x+4x cos x\u2212x^2sin x\nFind an equation of the tangent line to the following equations at the specified point.\nProblem: y=cos^(\u22121)(x)+x at x=0\nProblem: y=x+e^x\u22121/x at x=1 Solution: T=(2+e)x\u22122\nDraw the derivative for the following graphs.\nProblem:\nProbl"
+        },
+        {
+          "module_id": "m53586",
+          "book_id": "calculus-volume-1",
+          "title": "Derivatives of Exponential and Logarithmic Functions",
+          "section": "Derivative of the Exponential Function",
+          "excerpt": "Problem: Derivative of an Exponential Function. Find the derivative of f(x)=e^(tan(2x)). Solution: Using the derivative formula and the chain rule, f\u2032(x) =e^(tan (2x))d/dx(tan (2x)); =e^(tan(2x))sec^2(2x)\u00b72.\nProblem: Combining Differentiation Rules. Find the derivative of y=(e^(x^2))/x. Solution: Use the derivative of the natural exponential function, the quotient rule, and the chain rule. y\u2032 =((e^(x^2)\u00b72)x\u00b7x\u22121\u00b7e^(x^2))/(x^2) Apply the quotient rule.; =(e^(x^2)(2x^2\u22121))/(x^2) Simplify.\nProblem: "
+        },
+        {
+          "module_id": "m53586",
+          "book_id": "calculus-volume-1",
+          "title": "Derivatives of Exponential and Logarithmic Functions",
+          "section": "Derivative of the Logarithmic Function",
+          "excerpt": "Now that we have the derivative of the natural exponential function, we can use implicit differentiation to find the derivative of its inverse, the natural logarithmic function.\nThe Derivative of the Natural Logarithmic Function. If x>0 and y=ln x, then dy/dx=1/x. More generally, let g(x) be a differentiable function. For all values of x for which g(x)>0, the derivative of h(x)=ln (g(x)) is given by h\u2032(x)=(1/(g(x)))g\u2032(x).\nIf x>0 and y=ln x, then e^y=x. Differentiating both sides of this equation"
+        }
+      ]
+    },
+    {
+      "question": "how much work does it take to move an object with a constant force",
+      "expected": [
+        "m53648"
+      ],
+      "rank": 1,
+      "top_hits": [
+        {
+          "module_id": "m53648",
+          "book_id": "calculus-volume-1",
+          "title": "Physical Applications",
+          "section": "Work Done by a Force",
+          "excerpt": "We now consider work. In physics, work is related to force, which is often intuitively defined as a push or pull on an object. When a force moves an object, we say the force does work on the object. In other words, work can be thought of as the amount of energy it takes to move an object. According to physics, when we have a constant force, work can be expressed as the product of force and distance.\nIn the English system, the unit of force is the pound and the unit of distance is the foot, so wo"
+        },
+        {
+          "module_id": "m53648",
+          "book_id": "calculus-volume-1",
+          "title": "Physical Applications",
+          "section": "Glossary",
+          "excerpt": "density function: a density function describes how mass is distributed throughout an object; it can be a linear density, expressed in terms of mass per unit length; an area density, expressed in terms of mass per unit area; or a volume density, expressed in terms of mass per unit volume; weight-density is also used to describe weight (rather than mass) per unit volume\nHooke\u2019s law: this law states that the force required to compress (or elongate) a spring is proportional to the distance the sprin"
+        },
+        {
+          "module_id": "m53648",
+          "book_id": "calculus-volume-1",
+          "title": "Physical Applications",
+          "section": "Work Done in Pumping",
+          "excerpt": "Consider the work done to pump water (or some other liquid) out of a tank. Pumping problems are a little more complicated than spring problems because many of the calculations depend on the shape and size of the tank. In addition, instead of being concerned about the work done to move a single mass, we are looking at the work done to move a volume of water, and it takes more work to move the water from the bottom of the tank than it does to move the water from the top of the tank.\nWe examine the"
+        }
+      ]
+    },
+    {
+      "question": "slope of a curve at a point",
+      "expected": [
+        "m53495",
+        "m53485"
+      ],
+      "rank": 3,
+      "top_hits": [
+        {
+          "module_id": "m53585",
+          "book_id": "calculus-volume-1",
+          "title": "Implicit Differentiation",
+          "section": "Finding Tangent Lines Implicitly",
+          "excerpt": "Now that we have seen the technique of implicit differentiation, we can apply it to the problem of finding equations of tangent lines to curves described by equations.\nProblem: Finding a Tangent Line to a Circle. Find an equation of the line tangent to the curve x^2+y^2=25 at the point (3,\u22124). Solution: Although we could find this equation without using implicit differentiation, using that method makes it much easier. In [Example], we found dy/dx=\u2212x/y. The slope of the tangent line is found by s"
+        },
+        {
+          "module_id": "m53585",
+          "book_id": "calculus-volume-1",
+          "title": "Implicit Differentiation",
+          "section": "Finding Tangent Lines Implicitly",
+          "excerpt": "Problem: Finding the Equation of the Tangent Line to a Curve. Find an equation of the line tangent to the graph of y^3+x^3\u22123xy=0 at the point (3/2,3/2) ([Figure]). This curve is known as the folium (or leaf) of Descartes. [Figure] Finding the tangent line to the folium of Descartes at (3/2,3/2). Solution: Begin by finding dy/dx. d/dx(y^3+x^3\u22123xy) = d/dx(0); 3y^2dy/dx+3x^2\u2212(3y+(dy/dx)3x) = 0; dy/dx = (3y\u22123x^2)/(3y^2\u22123x). Next, substitute (3/2,3/2) into dy/dx=(3y\u22123x^2)/(3y^2\u22123x) to find the slope "
+        },
+        {
+          "module_id": "m53485",
+          "book_id": "calculus-volume-1",
+          "title": "A Preview of Calculus",
+          "section": "",
+          "excerpt": "As we embark on our study of calculus, we shall see how its development arose from common solutions to practical problems in areas such as engineering physics\u2014like the space travel problem posed in the chapter opener. Two key problems led to the initial formulation of calculus: (1) the tangent problem, or how to determine the slope of a line tangent to a curve at a point; and (2) the area problem, or how to determine the area under a curve."
+        }
+      ]
+    },
+    {
+      "question": "how fast is something changing at an instant",
+      "expected": [
+        "m53495",
+        "m53576"
+      ],
+      "rank": null,
+      "top_hits": [
+        {
+          "module_id": "m53604",
+          "book_id": "calculus-volume-1",
+          "title": "Related Rates",
+          "section": "Exercises",
+          "excerpt": "Problem: [T] Runners start at first and second base. When the baseball is hit, the runner at first base runs at a speed of 18 ft/sec toward second base and the runner at second base runs at a speed of 20 ft/sec toward third base. How fast is the distance between runners changing 1 sec after the ball is hit? Solution: The distance is decreasing at a rate of 11.99 ft/sec."
+        },
+        {
+          "module_id": "m53604",
+          "book_id": "calculus-volume-1",
+          "title": "Related Rates",
+          "section": "Exercises",
+          "excerpt": "Problem: A 10-ft ladder is leaning against a wall. If the top of the ladder slides down the wall at a rate of 2 ft/sec, how fast is the bottom moving along the ground when the bottom of the ladder is 5 ft from the wall? Solution: 2sqrt(3) ft/sec\nProblem: A 25-ft ladder is leaning against a wall. If we push the ladder toward the wall at a rate of 1 ft/sec, and the bottom of the ladder is initially 20 ft away from the wall, how fast does the ladder move up the wall 5 sec after we start pushing?\nPr"
+        },
+        {
+          "module_id": "m53604",
+          "book_id": "calculus-volume-1",
+          "title": "Related Rates",
+          "section": "Exercises",
+          "excerpt": "Problem: A tank is shaped like an upside-down square pyramid, with base of 4 m by 4 m and a height of 12 m (see the following figure). How fast does the height increase when the water is 2 m deep if water is being pumped in at a rate of 2/3 m3/sec? Solution: 3/2 m/sec\nFor the following problems, consider a pool shaped like the bottom half of a sphere, that is being filled at a rate of 25 ft3/min. The radius of the pool is 10 ft. The formula for the volume of a partial hemisphere is V=(\u03c0h)/6(3r^2"
+        }
+      ]
+    },
+    {
+      "question": "area under a curve",
+      "expected": [
+        "m53624",
+        "m53631"
+      ],
+      "rank": 1,
+      "top_hits": [
+        {
+          "module_id": "m53624",
+          "book_id": "calculus-volume-1",
+          "title": "Approximating Areas",
+          "section": "Approximating Area",
+          "excerpt": "[Figure] shows the same curve divided into eight subintervals. Comparing the graph with four rectangles in [Figure] with this graph with eight rectangles, we can see there appears to be less white space under the curve when n=8. This white space is area under the curve we are unable to include using our approximation. The area of the rectangles is\nL_8 =f(0)(0.25)+f(0.25)(0.25)+f(0.5)(0.25)+f(0.75)(0.25); +f(1)(0.25)+f(1.25)(0.25)+f(1.5)(0.25)+f(1.75)(0.25); =7.75.\n[Figure] The region under the c"
+        },
+        {
+          "module_id": "m53624",
+          "book_id": "calculus-volume-1",
+          "title": "Approximating Areas",
+          "section": "Glossary",
+          "excerpt": "left-endpoint approximation: an approximation of the area under a curve computed by using the left endpoint of each subinterval to calculate the height of the vertical sides of each rectangle\nlower sum: a sum obtained by using the minimum value of f(x) on each subinterval\npartition: a set of points that divides an interval into subintervals\nregular partition: a partition in which the subintervals all have the same width\nriemann sum: an estimate of the area under the curve of the form A\u2248\u2211i=1nf(x_"
+        },
+        {
+          "module_id": "m53624",
+          "book_id": "calculus-volume-1",
+          "title": "Approximating Areas",
+          "section": "",
+          "excerpt": "In this section, we develop techniques to approximate the area between a curve, defined by a function f(x), and the x-axis on a closed interval [a,b]. Like Archimedes, we first approximate the area under the curve using shapes of known area (namely, rectangles). By using smaller and smaller rectangles, we get closer and closer approximations to the area. Taking a limit allows us to calculate the exact area under the curve.\nLet\u2019s start by introducing some notation to make the calculations easier."
+        }
+      ]
+    },
+    {
+      "question": "derivative of sin x",
+      "expected": [
+        "m53578"
+      ],
+      "rank": 1,
+      "top_hits": [
+        {
+          "module_id": "m53578",
+          "book_id": "calculus-volume-1",
+          "title": "Derivatives of Trigonometric Functions",
+          "section": "Derivatives of the Sine and Cosine Functions",
+          "excerpt": "Problem: Differentiating a Function Containing sin x. Find the derivative of f(x)=5x^3sin x. Solution: Using the product rule, we have f\u2032(x) =d/dx(5x^3)\u00b7sin x+d/dx(sin x)\u00b75x^3; =15x^2\u00b7sin x+cos x\u00b75x^3. After simplifying, we obtain f\u2032(x)=15x^2sin x+5x^3cos x.\nProblem: Find the derivative of f(x)=sin x cos x. Solution: f\u2032(x)=cos^2x\u2212sin^2x Hint. Don\u2019t forget to use the product rule.\nProblem: Finding the Derivative of a Function Containing cos x. Find the derivative of g(x)=(cos x)/(4x^2). Solution:"
+        },
+        {
+          "module_id": "m53581",
+          "book_id": "calculus-volume-1",
+          "title": "The Chain Rule",
+          "section": "Deriving the Chain Rule",
+          "excerpt": "To put this rule into context, let\u2019s take a look at an example: h(x)=sin (x^3). We can think of the derivative of this function with respect to x as the rate of change of sin(x^3) relative to the change in x. Consequently, we want to know how sin(x^3) changes as x changes. We can think of this event as a chain reaction: As x changes, x^3 changes, which leads to a change in sin (x^3). This chain reaction gives us hints as to what is involved in computing the derivative of sin(x^3). First of all, "
+        },
+        {
+          "module_id": "m53578",
+          "book_id": "calculus-volume-1",
+          "title": "Derivatives of Trigonometric Functions",
+          "section": "Higher-Order Derivatives",
+          "excerpt": "The higher-order derivatives of sin x and cos x follow a repeating pattern. By following the pattern, we can find any higher-order derivative of sin x and cos x.\nProblem: Finding Higher-Order Derivatives of y=sin x. Find the first four derivatives of y=sin x. Solution: Each step in the chain is straightforward: y = sin x; dy/dx = cos x; (d^2y)/(dx^2) = \u2212sin x; (d^3y)/(dx^3) = \u2212cos x; (d^4y)/(dx^4) = sin x. Analysis. Once we recognize the pattern of derivatives, we can find any higher-order deriv"
+        }
+      ]
+    },
+    {
+      "question": "derivative of ln x",
+      "expected": [
+        "m53586"
+      ],
+      "rank": 1,
+      "top_hits": [
+        {
+          "module_id": "m53586",
+          "book_id": "calculus-volume-1",
+          "title": "Derivatives of Exponential and Logarithmic Functions",
+          "section": "Derivative of the Logarithmic Function",
+          "excerpt": "Problem: Using Properties of Logarithms in a Derivative. Find the derivative of f(x)=ln ((x^2sin x)/(2x+1)). Solution: At first glance, taking this derivative appears rather complicated. However, by using the properties of logarithms prior to finding the derivative, we can make the problem much simpler. f(x) = ln ((x^2sin x)/(2x+1))=2 ln x+ln (sin x)\u2212ln (2x+1) Apply properties of logarithms.; f\u2032(x) = 2/x+cot x\u22122/(2x+1) Apply sum rule and h\u2032(x)=1/(g(x))g\u2032(x).\nProblem: Differentiate: f(x)=ln(3x+2)"
+        },
+        {
+          "module_id": "m53586",
+          "book_id": "calculus-volume-1",
+          "title": "Derivatives of Exponential and Logarithmic Functions",
+          "section": "Derivative of the Logarithmic Function",
+          "excerpt": "Problem: Applying Derivative Formulas. Find the derivative of h(x)=(3^x)/(3^x+2). Solution: Use the quotient rule and . h\u2032(x) =(3^x ln 3(3^x+2)\u22123^x ln 3(3^x))/((3^x+2)^2) Apply the quotient rule.; =(2\u00b73^x ln 3)/((3^x+2)^2) Simplify.\nProblem: Finding the Slope of a Tangent Line. Find the slope of the line tangent to the graph of y=log_2(3x+1) at x=1. Solution: To find the slope, we must evaluate dy/dx at x=1. Using [Equation], we see that dy/dx=3/((3x+1) ln 2). By evaluating the derivative at x=1"
+        },
+        {
+          "module_id": "m53650",
+          "book_id": "calculus-volume-1",
+          "title": "Integrals, Exponential Functions, and Logarithms",
+          "section": "Properties of the Natural Logarithm",
+          "excerpt": "Because of the way we defined the natural logarithm, the following differentiation formula falls out immediately as a result of to the Fundamental Theorem of Calculus.\nDerivative of the Natural Logarithm. For x>0, the derivative of the natural logarithm is given by (d/dx)ln x=1/x.\nCorollary to the Derivative of the Natural Logarithm. The function ln x is differentiable; therefore, it is continuous.\nA graph of ln x is shown in [Figure]. Notice that it is continuous throughout its domain of (0,\u221e)."
+        }
+      ]
+    },
+    {
+      "question": "integral of 1/x",
+      "expected": [
+        "m53635",
+        "m53650"
+      ],
+      "rank": 2,
+      "top_hits": [
+        {
+          "module_id": "m53631",
+          "book_id": "calculus-volume-1",
+          "title": "The Definite Integral",
+          "section": "Properties of the Definite Integral",
+          "excerpt": "Problem: Using the Properties of the Definite Integral. Use the properties of the definite integral to express the definite integral of f(x)=\u22123x^3+2x+2 over the interval [\u22122,1] as the sum of three definite integrals. Solution: Using integral notation, we have (\u222b)_(\u22122)^1(\u22123x^3+2x+2)dx. We apply properties 3. and 5. to get (\u222b)_(\u22122)^1(\u22123x^3+2x+2)dx =(\u222b)_(\u22122)^1\u22123x^3dx+(\u222b)_(\u22122)^12xdx+(\u222b)_(\u22122)^12dx; =\u22123(\u222b)_(\u22122)^1x^3dx+2(\u222b)_(\u22122)^1xdx+(\u222b)_(\u22122)^12dx.\nProblem: Use the properties of the definite integral t"
+        },
+        {
+          "module_id": "m53635",
+          "book_id": "calculus-volume-1",
+          "title": "Integrals Involving Exponential and Logarithmic Functions",
+          "section": "Exercises",
+          "excerpt": "Problem: \u222be^(ln x)(dx/x)\nProblem: \u222b(e^(ln(1\u2212t)))/(1\u2212t)dt Solution: t+C\nIn the following exercises, verify by differentiation that \u222bln x dx=x(ln x\u22121)+C, then use appropriate changes of variables to compute the integral.\nProblem: \u222bx ln xdx (Hint: \u222bx ln xdx=1/2\u222bx ln(x^2)dx)\nProblem: \u222bx^2ln(x^2) dx Solution: (2/9)x^3(ln(x^3)\u22121)+C\nProblem: \u222b(ln x)/(x^2)dx (Hint: Set u=1/x.)\nProblem: \u222b((ln x)/(sqrt(x)))dx (Hint: Set u=sqrt(x).) Solution: 2sqrt(x)(ln x\u22122)+C\nProblem: Write an integral to express the are"
+        },
+        {
+          "module_id": "m53635",
+          "book_id": "calculus-volume-1",
+          "title": "Integrals Involving Exponential and Logarithmic Functions",
+          "section": "Integrals of Exponential Functions",
+          "excerpt": "Problem: Evaluating a Definite Integral Involving an Exponential Function. Evaluate the definite integral (\u222b)_1^2e^(1\u2212x)dx. Solution: Again, substitution is the method to use. Let u=1\u2212x, so du=\u22121dx or \u2212du=dx. Then \u222be^(1\u2212x)dx=\u2212\u222be^udu. Next, change the limits of integration. Using the equation u=1\u2212x, we have u=1\u2212(1)=0; u=1\u2212(2)=\u22121. The integral then becomes (\u222b)_1^2e^(1\u2212x)dx =\u2212(\u222b)_0^(\u22121)e^udu; =(\u222b)_(\u22121)^0e^udu; =(e^u|)_(\u22121)^0; =e^0\u2212(e^(\u22121)); =\u2212e^(\u22121)+1. See [Figure]. [Figure] The indicated area can "
+        }
+      ]
+    },
+    {
+      "question": "how to do u substitution",
+      "expected": [
+        "m53634"
+      ],
+      "rank": 1,
+      "top_hits": [
+        {
+          "module_id": "m53634",
+          "book_id": "calculus-volume-1",
+          "title": "Substitution",
+          "section": "Substitution for Definite Integrals",
+          "excerpt": "Substitution may be only one of the techniques needed to evaluate a definite integral. All of the properties and rules of integration apply independently, and trigonometric functions may need to be rewritten using a trigonometric identity before we can apply substitution. Also, we have the option of replacing the original expression for u after we find the antiderivative, which means that we do not have to change the limits of integration. These two approaches are shown in [Example]."
+        },
+        {
+          "module_id": "m53634",
+          "book_id": "calculus-volume-1",
+          "title": "Substitution",
+          "section": "Substitution for Definite Integrals",
+          "excerpt": "Problem: Using Substitution with an Exponential Function. Use substitution to evaluate (\u222b)_0^1xe^(4x^2+3)dx. Solution: Let u=4x^2+3. Then, du=8xdx. To adjust the limits of integration, we note that when x=0,u=3, and when x=1,u=7. So our substitution gives (\u222b)_0^1xe^(4x^2+3)dx =1/8(\u222b)_3^7e^udu; =1/8e^u(|)_3^7; =(e^7\u2212e^3)/8; \u2248134.568.\nProblem: Use substitution to evaluate (\u222b)_0^1x^2cos(((\u03c0)/2)x^3)dx. Solution: 2/(3\u03c0)\u22480.2122 Hint. Use the process from [Example] to solve the problem."
+        },
+        {
+          "module_id": "m53634",
+          "book_id": "calculus-volume-1",
+          "title": "Substitution",
+          "section": "Exercises",
+          "excerpt": "Problem: Find the area under the graph of g(t)=t/((1\u2212t^2)^a) between t=0 and t=x, where 0<x<1 and a>0 is fixed. Evaluate the limit as x\u21921. Solution: (\u222b)_0^xg(t)dt=(1/2)(\u222b)_(u=1\u2212x^2)^1(du/(u^a))=(1/(2(1\u2212a)))u^(1\u2212a)(|)_(u=1\u2212x^2)^1=1/(2(1\u2212a))(1\u2212(1\u2212x^2)^(1\u2212a)). As x\u21921 the limit is 1/(2(1\u2212a)) if a<1, and the limit diverges to +\u221e if a\u22651.\nProblem: The area of a semicircle of radius 1 can be expressed as (\u222b)_(\u22121)^1sqrt(1\u2212x^2)dx. Use the substitution x=cos t to express the area of a semicircle as the int"
+        }
+      ]
+    },
+    {
+      "question": "what is a limit",
+      "expected": [
+        "m53491",
+        "m53485"
+      ],
+      "rank": null,
+      "top_hits": [
+        {
+          "module_id": "m53493",
+          "book_id": "calculus-volume-1",
+          "title": "The Precise Definition of a Limit",
+          "section": "Proving Limit Laws",
+          "excerpt": "We now explore what it means for a limit not to exist. The limit limx\u2192af(x) does not exist if there is no real number L for which limx\u2192af(x)=L. Thus, for all real numbers L, limx\u2192af(x)\u2260L. To understand what this means, we look at each part of the definition of limx\u2192af(x)=L together with its opposite. A translation of the definition is given in [Table].\nFinally, we may state what it means for a limit not to exist. The limit limx\u2192af(x) does not exist if for every real number L, there exists a real"
+        },
+        {
+          "module_id": "m53493",
+          "book_id": "calculus-volume-1",
+          "title": "The Precise Definition of a Limit",
+          "section": "",
+          "excerpt": "By now you have progressed from the very informal definition of a limit in the introduction of this chapter to the intuitive understanding of a limit. At this point, you should have a very strong intuitive sense of what the limit of a function means and how you can find it. In this section, we convert this intuitive idea of a limit into a formal definition using precise mathematical language. The formal definition of a limit is quite possibly one of the most challenging definitions you will enco"
+        },
+        {
+          "module_id": "m53483",
+          "book_id": "calculus-volume-1",
+          "title": "Introduction",
+          "section": "",
+          "excerpt": "The idea of a limit is central to all of calculus. We begin this chapter by examining why limits are so important. Then, we go on to describe how to find the limit of a function at a given point. Not all functions have limits at all points, and we discuss what this means and how we can tell if a function does or does not have a limit at a particular value. This chapter has been created in an informal, intuitive fashion, but this is not always enough if we need to prove a mathematical statement i"
+        }
+      ]
+    },
+    {
+      "question": "what does it mean for a function to be continuous",
+      "expected": [
+        "m53489"
+      ],
+      "rank": 1,
+      "top_hits": [
+        {
+          "module_id": "m53489",
+          "book_id": "calculus-volume-1",
+          "title": "Continuity",
+          "section": "Continuity at a Point",
+          "excerpt": "Before we look at a formal definition of what it means for a function to be continuous at a point, let\u2019s consider various functions that fail to meet our intuitive notion of what it means to be continuous at a point. We then create a list of conditions that prevent such failures.\nOur first function of interest is shown in [Figure]. We see that the graph of f(x) has a hole at a. In fact, f(a) is undefined. At the very least, for f(x) to be continuous at a, we need the following condition:\ni. f(a)"
+        },
+        {
+          "module_id": "m53481",
+          "book_id": "calculus-volume-1",
+          "title": "Exponential and Logarithmic Functions",
+          "section": "Chapter Review Exercises",
+          "excerpt": "Problem: Find the inverse of the carbon-dating equation. What does it mean? If there is 25% radiocarbon, how old is the skeleton?"
+        },
+        {
+          "module_id": "m53612",
+          "book_id": "calculus-volume-1",
+          "title": "The Mean Value Theorem",
+          "section": "Exercises",
+          "excerpt": "Problem: Why do you need continuity to apply the Mean Value Theorem? Construct a counterexample.\nProblem: Why do you need differentiability to apply the Mean Value Theorem? Find a counterexample. Solution: One example is f(x)=|x|+3, \u22122\u2264x\u22642\nProblem: When are Rolle\u2019s theorem and the Mean Value Theorem equivalent?\nProblem: If you have a function with a discontinuity, is it still possible to have f\u2032(c)(b\u2212a)=f(b)\u2212f(a)? Draw such an example or prove why not. Solution: Yes, but the Mean Value Theorem s"
+        }
+      ]
+    },
+    {
+      "question": "limit as x goes to infinity",
+      "expected": [
+        "m53596"
+      ],
+      "rank": null,
+      "top_hits": [
+        {
+          "module_id": "m53631",
+          "book_id": "calculus-volume-1",
+          "title": "The Definite Integral",
+          "section": "Definition and Notation",
+          "excerpt": "Functions that are not continuous on [a,b] may still be integrable, depending on the nature of the discontinuities. For example, functions continuous on a closed interval, apart from a finite number of jump discontinuities, are integrable.\nIt is also worth noting here that we have retained the use of a regular partition in the Riemann sums. This restriction is not strictly necessary. Any partition can be used to form a Riemann sum. However, if a nonregular partition is used to define the definit"
+        },
+        {
+          "module_id": "m53478",
+          "book_id": "calculus-volume-1",
+          "title": "Basic Classes of Functions",
+          "section": "Polynomials > Behavior at Infinity",
+          "excerpt": "To determine the behavior of a function f as the inputs approach infinity, we look at the values f(x) as the inputs, x, become larger. For some functions, the values of f(x) approach a finite number. For example, for the function f(x)=2+1/x, the values 1/x become closer and closer to zero for all values of x as they get larger and larger. For this function, we say \u201cf(x) approaches two as x goes to infinity,\u201d and we write f(x)\u21922 as x\u2192\u221e. The line y=2 is a horizontal asymptote for the function f(x)"
+        },
+        {
+          "module_id": "m53631",
+          "book_id": "calculus-volume-1",
+          "title": "The Definite Integral",
+          "section": "Glossary",
+          "excerpt": "average value of a function: (or fave) the average value of a function on an interval can be found by calculating the definite integral of the function and dividing that value by the length of the interval\ndefinite integral: a primary operation of calculus; the area between the curve and the x-axis over a given interval is a definite integral\nintegrable function: a function is integrable if the limit defining the integral exists; in other words, if the limit of the Riemann sums as n goes to infi"
+        }
+      ]
+    },
+    {
+      "question": "when is a function concave up",
+      "expected": [
+        "m53613"
+      ],
+      "rank": 1,
+      "top_hits": [
+        {
+          "module_id": "m53613",
+          "book_id": "calculus-volume-1",
+          "title": "Derivatives and the Shape of a Graph",
+          "section": "Concavity and Points of Inflection",
+          "excerpt": "In general, without having the graph of a function f, how can we determine its concavity? By definition, a function f is concave up if f\u2032 is increasing. From Corollary 3, we know that if f\u2032 is a differentiable function, then f\u2032 is increasing if its derivative f\u2033(x)>0. Therefore, a function f that is twice differentiable is concave up when f\u2033(x)>0. Similarly, a function f is concave down if f\u2032 is decreasing. We know that a differentiable function f\u2032 is decreasing if its derivative f\u2033(x)<0. Theref"
+        },
+        {
+          "module_id": "m53613",
+          "book_id": "calculus-volume-1",
+          "title": "Derivatives and the Shape of a Graph",
+          "section": "Glossary",
+          "excerpt": "concave down: if f is differentiable over an interval I and f\u2032 is decreasing over I, then f is concave down over I\nconcave up: if f is differentiable over an interval I and f\u2032 is increasing over I, then f is concave up over I\nconcavity: the upward or downward curve of the graph of a function\nconcavity test: suppose f is twice differentiable over an interval I; if f\u2033>0 over I, then f is concave up over I; if f\u2033<0 over I, then f is concave down over I"
+        },
+        {
+          "module_id": "m53613",
+          "book_id": "calculus-volume-1",
+          "title": "Derivatives and the Shape of a Graph",
+          "section": "Concavity and Points of Inflection",
+          "excerpt": "Problem: For f(x)=\u2212x^3+(3/2)x^2+18x, find all intervals where f is concave up and all intervals where f is concave down. Solution: f is concave up over the interval (\u2212\u221e,1/2) and concave down over the interval (1/2,\u221e) Hint. Find where f\u2033(x)=0.\nWe now summarize, in [Table], the information that the first and second derivatives of a function f provide about the graph of f, and illustrate this information in [Figure].\n[Figure] Consider a twice-differentiable function f over an open interval I. If f\u2032"
+        }
+      ]
+    },
+    {
+      "question": "water level rising as a tank fills",
+      "expected": [
+        "m53604"
+      ],
+      "rank": 1,
+      "top_hits": [
+        {
+          "module_id": "m53604",
+          "book_id": "calculus-volume-1",
+          "title": "Related Rates",
+          "section": "Exercises",
+          "excerpt": "For the following exercises, consider a right cone that is leaking water. The dimensions of the conical tank are a height of 16 ft and a radius of 5 ft.\nProblem: How fast does the depth of the water change when the water is 10 ft high if the cone leaks water at a rate of 10 ft3/min? Solution: The depth of the water decreases at 128/(125\u03c0) ft/min.\nProblem: Find the rate at which the surface area of the water changes when the water is 10 ft high if the cone leaks water at a rate of 10 ft3/min.\nPro"
+        },
+        {
+          "module_id": "m53648",
+          "book_id": "calculus-volume-1",
+          "title": "Physical Applications",
+          "section": "Work Done in Pumping",
+          "excerpt": "Problem: A Pumping Problem with a Noncylindrical Tank. Assume a tank in the shape of an inverted cone, with height 12 ft and base radius 4 ft. The tank is full to start with, and water is pumped over the upper edge of the tank until the height of the water remaining in the tank is 4 ft. How much work is required to pump out that amount of water? Solution: The tank is depicted in [Figure]. As we did in the example with the cylindrical tank, we orient the x-axis vertically, with the origin at the "
+        },
+        {
+          "module_id": "m53648",
+          "book_id": "calculus-volume-1",
+          "title": "Physical Applications",
+          "section": "Work Done in Pumping",
+          "excerpt": "Consider the work done to pump water (or some other liquid) out of a tank. Pumping problems are a little more complicated than spring problems because many of the calculations depend on the shape and size of the tank. In addition, instead of being concerned about the work done to move a single mass, we are looking at the work done to move a volume of water, and it takes more work to move the water from the bottom of the tank than it does to move the water from the top of the tank.\nWe examine the"
+        }
+      ]
+    },
+    {
+      "question": "volume of a solid of revolution",
+      "expected": [
+        "m53642",
+        "m53643"
+      ],
+      "rank": 1,
+      "top_hits": [
+        {
+          "module_id": "m53642",
+          "book_id": "calculus-volume-1",
+          "title": "Determining Volumes by Slicing",
+          "section": "Glossary",
+          "excerpt": "cross-section: the intersection of a plane and a solid object\ndisk method: a special case of the slicing method used with solids of revolution when the slices are disks\nslicing method: a method of calculating the volume of a solid that involves cutting the solid into pieces, estimating the volume of each piece, then adding these estimates to arrive at an estimate of the total volume; as the number of slices goes to infinity, this estimate becomes an integral that gives the exact value of the vol"
+        },
+        {
+          "module_id": "m53642",
+          "book_id": "calculus-volume-1",
+          "title": "Determining Volumes by Slicing",
+          "section": "The Disk Method",
+          "excerpt": "Let\u2019s look at some examples.\nProblem: Using the Disk Method to Find the Volume of a Solid of Revolution 1. Use the disk method to find the volume of the solid of revolution generated by rotating the region between the graph of f(x)=sqrt(x) and the x-axis over the interval [1,4] around the x-axis. Solution: The graphs of the function and the solid of revolution are shown in the following figure. [Figure] (a) The function f(x)=sqrt(x) over the interval [1,4]. (b) The solid of revolution obtained b"
+        },
+        {
+          "module_id": "m53643",
+          "book_id": "calculus-volume-1",
+          "title": "Volumes of Revolution: Cylindrical Shells",
+          "section": "The Method of Cylindrical Shells",
+          "excerpt": "Problem: The Method of Cylindrical Shells 1. Define R as the region bounded above by the graph of f(x)=1/x and below by the x-axis over the interval [1,3]. Find the volume of the solid of revolution formed by revolving R around the y-axis. Solution: First we must graph the region R and the associated solid of revolution, as shown in the following figure. [Figure] (a) The region R under the graph of f(x)=1/x over the interval [1,3]. (b) The solid of revolution generated by revolving R about the y"
+        }
+      ]
+    },
+    {
+      "question": "how long until a population doubles",
+      "expected": [
+        "m53651",
+        "m53481"
+      ],
+      "rank": 1,
+      "top_hits": [
+        {
+          "module_id": "m53481",
+          "book_id": "calculus-volume-1",
+          "title": "Exponential and Logarithmic Functions",
+          "section": "Exercises",
+          "excerpt": "Problem: [T] The rabbit population on a game reserve doubles every 6 months. Suppose there were 120 rabbits initially. - Use the exponential function P=P_0a^t to determine the growth rate constant a. Round to four decimal places. - Use the function in part a. to determine approximately how long it takes for the rabbit population to reach 3500.\nProblem: [T] The 1906 earthquake in San Francisco had a magnitude of 8.3 on the Richter scale. At the same time, in Japan, an earthquake with magnitude 4."
+        },
+        {
+          "module_id": "m53651",
+          "book_id": "calculus-volume-1",
+          "title": "Exponential Growth and Decay",
+          "section": "Exponential Growth Model",
+          "excerpt": "Problem: Suppose it takes 9 months for the fish population in [Example] to reach 1000 fish. Under these circumstances, how long do the owner\u2019s friends have to wait? Solution: 38.90 months Hint. Use the process from the previous example."
+        },
+        {
+          "module_id": "m53612",
+          "book_id": "calculus-volume-1",
+          "title": "The Mean Value Theorem",
+          "section": "The Mean Value Theorem and Its Meaning",
+          "excerpt": "Problem: Suppose a ball is dropped from a height of 200 ft. Its position at time t is s(t)=\u221216t^2+200. Find the time t when the instantaneous velocity of the ball equals its average velocity. Solution: 5/(2sqrt(2)) sec Hint. First, determine how long it takes for the ball to hit the ground. Then, find the average velocity of the ball from the time it is dropped until it hits the ground."
+        }
+      ]
+    },
+    {
+      "question": "equation of the tangent line to a curve",
+      "expected": [
+        "m53495",
+        "m53575",
+        "m53573"
+      ],
+      "rank": null,
+      "top_hits": [
+        {
+          "module_id": "m53585",
+          "book_id": "calculus-volume-1",
+          "title": "Implicit Differentiation",
+          "section": "Finding Tangent Lines Implicitly",
+          "excerpt": "Problem: Finding the Equation of the Tangent Line to a Curve. Find an equation of the line tangent to the graph of y^3+x^3\u22123xy=0 at the point (3/2,3/2) ([Figure]). This curve is known as the folium (or leaf) of Descartes. [Figure] Finding the tangent line to the folium of Descartes at (3/2,3/2). Solution: Begin by finding dy/dx. d/dx(y^3+x^3\u22123xy) = d/dx(0); 3y^2dy/dx+3x^2\u2212(3y+(dy/dx)3x) = 0; dy/dx = (3y\u22123x^2)/(3y^2\u22123x). Next, substitute (3/2,3/2) into dy/dx=(3y\u22123x^2)/(3y^2\u22123x) to find the slope "
+        },
+        {
+          "module_id": "m53585",
+          "book_id": "calculus-volume-1",
+          "title": "Implicit Differentiation",
+          "section": "Finding Tangent Lines Implicitly",
+          "excerpt": "Now that we have seen the technique of implicit differentiation, we can apply it to the problem of finding equations of tangent lines to curves described by equations.\nProblem: Finding a Tangent Line to a Circle. Find an equation of the line tangent to the curve x^2+y^2=25 at the point (3,\u22124). Solution: Although we could find this equation without using implicit differentiation, using that method makes it much easier. In [Example], we found dy/dx=\u2212x/y. The slope of the tangent line is found by s"
+        },
+        {
+          "module_id": "m53585",
+          "book_id": "calculus-volume-1",
+          "title": "Implicit Differentiation",
+          "section": "",
+          "excerpt": "We have already studied how to find equations of tangent lines to functions and the rate of change of a function at a specific point. In all these cases we had the explicit equation for the function and differentiated these functions explicitly. Suppose instead that we want to determine the equation of a tangent line to an arbitrary curve or the rate of change of an arbitrary curve at a point. In this section, we solve these problems by finding the derivatives of functions that define y implicit"
+        }
+      ]
+    },
+    {
+      "question": "find dy/dx when x and y are mixed together in one equation",
+      "expected": [
+        "m53585"
+      ],
+      "rank": null,
+      "top_hits": [
+        {
+          "module_id": "m53605",
+          "book_id": "calculus-volume-1",
+          "title": "Linear Approximations and Differentials",
+          "section": "Differentials",
+          "excerpt": "It is important to notice that dy is a function of both x and dx. The expressions dy and dx are called differentials. We can divide both sides of [Equation] by dx, which yields\ndy/dx=f\u2032(x).\nThis is the familiar expression we have used to denote a derivative. [Equation] is known as the differential form of [Equation].\nProblem: Computing differentials. For each of the following functions, find dy and evaluate when x=3 and dx=0.1. - y=x^2+2x - y=cos x Solution: The key step is calculating the deriv"
+        },
+        {
+          "module_id": "m53581",
+          "book_id": "calculus-volume-1",
+          "title": "The Chain Rule",
+          "section": "The Chain Rule Using Leibniz\u2019s Notation",
+          "excerpt": "Problem: Taking a Derivative Using Leibniz\u2019s Notation, Example 1. Find the derivative of y=(x/(3x+2))^5. Solution: First, let u=x/(3x+2). Thus, y=u^5. Next, find du/dx and dy/du. Using the quotient rule, du/dx=2/((3x+2)^2) and dy/du=5u^4. Finally, we put it all together. dy/dx =dy/du\u00b7du/dx Apply the chain rule.; =5u^4\u00b72/((3x+2)^2) Substitute dy/du=5u^4 and du/dx=2/((3x+2)^2).; =5(x/(3x+2))^4\u00b72/((3x+2)^2) Substitute u=x/(3x+2).; =(10x^4)/((3x+2)^6) Simplify. It is important to remember that, when"
+        },
+        {
+          "module_id": "m53621",
+          "book_id": "calculus-volume-1",
+          "title": "Antiderivatives",
+          "section": "Initial-Value Problems",
+          "excerpt": "We look at techniques for integrating a large variety of functions involving products, quotients, and compositions later in the text. Here we turn to one common use for antiderivatives that arises often in many applications: solving differential equations.\nA differential equation is an equation that relates an unknown function and one or more of its derivatives. The equation\ndy/dx=f(x)\nis a simple example of a differential equation. Solving this equation means finding a function y with a derivat"
+        }
+      ]
+    },
+    {
+      "question": "indeterminate form 0/0 limit",
+      "expected": [
+        "m53619",
+        "m53491",
+        "m53492"
+      ],
+      "rank": 1,
+      "top_hits": [
+        {
+          "module_id": "m53619",
+          "book_id": "calculus-volume-1",
+          "title": "L\u2019H\u00f4pital\u2019s Rule",
+          "section": "Key Concepts",
+          "excerpt": "- L\u2019H\u00f4pital\u2019s rule can be used to evaluate the limit of a quotient when the indeterminate form 0/0 or \u221e/\u221e arises. - L\u2019H\u00f4pital\u2019s rule can also be applied to other indeterminate forms if they can be rewritten in terms of a limit involving a quotient that has the indeterminate form 0/0 or \u221e/\u221e. - The exponential function e^x grows faster than any power function x^p, p>0. - The logarithmic function ln x grows more slowly than any power function x^p, p>0."
+        },
+        {
+          "module_id": "m53492",
+          "book_id": "calculus-volume-1",
+          "title": "The Limit Laws",
+          "section": "Additional Limit Evaluation Techniques",
+          "excerpt": "The limit has the form limx\u2192a((f(x))/(g(x))), where limx\u2192af(x)=0 and limx\u2192ag(x)=0. (In this case, we say that f(x)/g(x) has the indeterminate form 0/0.) The following Problem-Solving Strategy provides a general outline for evaluating limits of this type."
+        },
+        {
+          "module_id": "m53619",
+          "book_id": "calculus-volume-1",
+          "title": "L\u2019H\u00f4pital\u2019s Rule",
+          "section": "Other Indeterminate Forms > Indeterminate Form of Type \u221e\u2212\u221e",
+          "excerpt": "Since L\u2019H\u00f4pital\u2019s rule applies to quotients, we use the natural logarithm function and its properties to reduce a problem evaluating a limit involving exponents to a related problem involving a limit of a quotient. For example, suppose we want to evaluate limx\u2192af(x)^(g(x)) and we arrive at the indeterminate form (\u221e)^0. (The indeterminate forms 0^0 and 1^(\u221e) can be handled similarly.) We proceed as follows. Let\ny=f(x)^(g(x)).\nThen,\nln y=ln(f(x)^(g(x)))=g(x)ln(f(x)).\nTherefore,\nlimx\u2192a[ln(y)]=limx\u2192"
+        }
+      ]
+    },
+    {
+      "question": "how are derivatives and integrals related",
+      "expected": [
+        "m53632"
+      ],
+      "rank": null,
+      "top_hits": [
+        {
+          "module_id": "m53631",
+          "book_id": "calculus-volume-1",
+          "title": "The Definite Integral",
+          "section": "Definition and Notation",
+          "excerpt": "The integral symbol in the previous definition should look familiar. We have seen similar notation in the chapter on Applications of Derivatives, where we used the indefinite integral symbol (without the a and b above and below) to represent an antiderivative. Although the notation for indefinite integrals may look similar to the notation for a definite integral, they are not the same. A definite integral is a number. An indefinite integral is a family of functions. Later in this chapter we exam"
+        },
+        {
+          "module_id": "m53604",
+          "book_id": "calculus-volume-1",
+          "title": "Related Rates",
+          "section": "",
+          "excerpt": "We have seen that for quantities that are changing over time, the rates at which these quantities change are given by derivatives. If two related quantities are changing over time, the rates at which the quantities change are related. For example, if a balloon is being filled with air, both the radius of the balloon and the volume of the balloon are increasing. In this section, we consider several problems in which two or more related quantities are changing and we study how to determine the rel"
+        },
+        {
+          "module_id": "m53602",
+          "book_id": "calculus-volume-1",
+          "title": "Introduction",
+          "section": "",
+          "excerpt": "A rocket launch involves two related quantities that change over time. Being able to solve this type of problem is just one application of derivatives introduced in this chapter. We also look at how derivatives are used to find maximum and minimum values of functions. As a result, we will be able to solve applied optimization problems, such as maximizing revenue and minimizing surface area. In addition, we examine how derivatives are used to evaluate complicated limits, to approximate roots of f"
+        }
+      ]
+    },
+    {
+      "question": "estimate a root of an equation by iteration",
+      "expected": [
+        "m53620"
+      ],
+      "rank": 4,
+      "top_hits": [
+        {
+          "module_id": "m53612",
+          "book_id": "calculus-volume-1",
+          "title": "The Mean Value Theorem",
+          "section": "Exercises",
+          "excerpt": "Problem: y=ln(x+1) over [0,e\u22121] Solution: Yes\nProblem: y=x sin(\u03c0x) over [0,2]\nProblem: y=5+|x| over [\u22121,1] Solution: The Mean Value Theorem does not apply; not differentiable at x=0.\nFor the following exercises, consider the roots of the equation.\nProblem: Show that the equation y=x^3+4x+16 has exactly one real root. What is it?\nProblem: Find the conditions for exactly one root (double root) for the equation y=x^2+bx+c Solution: b=\u00b12sqrt(c)\nProblem: Find the conditions for y=e^x\u2212b to have one ro"
+        },
+        {
+          "module_id": "m53605",
+          "book_id": "calculus-volume-1",
+          "title": "Linear Approximations and Differentials",
+          "section": "Linear Approximation of a Function at a Point",
+          "excerpt": "Problem: Linear Approximation of sqrt(x). Find the linear approximation of f(x)=sqrt(x) at x=9 and use the approximation to estimate sqrt(9.1). Solution: Since we are looking for the linear approximation at x=9, using [Equation] we know the linear approximation is given by L(x)=f(9)+f\u2032(9)(x\u22129). We need to find f(9) and f\u2032(9). f(x)=sqrt(x) \u21d2 f(9)=sqrt(9)=3; f\u2032(x)=1/(2sqrt(x)) \u21d2 f\u2032(9)=1/(2sqrt(9))=1/6 Therefore, the linear approximation is given by [Figure]. L(x)=3+(1/6)(x\u22129) Using the linear appr"
+        },
+        {
+          "module_id": "m53585",
+          "book_id": "calculus-volume-1",
+          "title": "Implicit Differentiation",
+          "section": "Implicit Differentiation",
+          "excerpt": "In general, an equation defines a function implicitly if the function satisfies that equation. An equation may define many different functions implicitly. For example, the functions\ny=sqrt(25\u2212x^2), y=-sqrt(25-x^2), and y={sqrt(25\u2212x^2) if\u22125<x<0; \u2212sqrt(25\u2212x^2) if 0<x<25, which are illustrated in [Figure], are just three of the many functions defined implicitly by the equation x^2+y^2=25.\n[Figure] The equation x^2+y^2=25 defines many functions implicitly."
+        }
+      ]
+    },
+    {
+      "question": "length of a curve",
+      "expected": [
+        "m53644"
+      ],
+      "rank": 1,
+      "top_hits": [
+        {
+          "module_id": "m53644",
+          "book_id": "calculus-volume-1",
+          "title": "Arc Length of a Curve and Surface Area",
+          "section": "Arc Length of the Curve y = f(x)",
+          "excerpt": "Let f(x) be a smooth function defined over [a,b]. We want to calculate the length of the curve from the point (a,f(a)) to the point (b,f(b)). We start by using line segments to approximate the length of the curve. For i=0, 1,2,\u2026,n, let P={x_i} be a regular partition of [a,b]. Then, for i=1,2,\u2026,n, construct a line segment from the point (x_(i\u22121),f(x_(i\u22121))) to the point (x_i,f(x_i)). Although it might seem logical to use either horizontal or vertical line segments, we want our line segments to ap"
+        },
+        {
+          "module_id": "m53644",
+          "book_id": "calculus-volume-1",
+          "title": "Arc Length of a Curve and Surface Area",
+          "section": "",
+          "excerpt": "In this section, we use definite integrals to find the arc length of a curve. We can think of arc length as the distance you would travel if you were walking along the path of the curve. Many real-world applications involve arc length. If a rocket is launched along a parabolic path, we might want to know how far the rocket travels. Or, if a curve on a map represents a road, we might want to know how far we have to drive to reach our destination.\nWe begin by calculating the arc length of curves d"
+        },
+        {
+          "module_id": "m53644",
+          "book_id": "calculus-volume-1",
+          "title": "Arc Length of a Curve and Surface Area",
+          "section": "Glossary",
+          "excerpt": "arc length: the arc length of a curve can be thought of as the distance a person would travel along the path of the curve\nfrustum: a portion of a cone; a frustum is constructed by cutting the cone with a plane parallel to the base\nsurface area: the surface area of a solid is the total area of the outer layer of the object; for objects such as cubes or bricks, the surface area of the object is the sum of the areas of all of its faces"
+        }
+      ]
+    },
+    {
+      "question": "center of mass of a thin plate",
+      "expected": [
+        "m53649"
+      ],
+      "rank": 1,
+      "top_hits": [
+        {
+          "module_id": "m53649",
+          "book_id": "calculus-volume-1",
+          "title": "Moments and Centers of Mass",
+          "section": "Center of Mass of Thin Plates",
+          "excerpt": "Center of Mass of a Thin Plate in the xy-Plane. Let R denote a region bounded above by the graph of a continuous function f(x), below by the x-axis, and on the left and right by the lines x=a and x=b, respectively. Let \u03c1 denote the density of the associated lamina. Then we can make the following statements: - m=\u03c1(\u222b)_a^bf(x)dx. - Mx My x y M_x=\u03c1(\u222b)_a^b((([f(x)])^2)/2)dx and M_y=\u03c1(\u222b)_a^bxf(x)dx. - (x\u2013,y\u2013) x\u2013=(M_y)/m and y\u2013=(M_x)/m.\nIn the next example, we use this theorem to find the center of mas"
+        },
+        {
+          "module_id": "m53649",
+          "book_id": "calculus-volume-1",
+          "title": "Moments and Centers of Mass",
+          "section": "Glossary",
+          "excerpt": "center of mass: the point at which the total mass of the system could be concentrated without changing the moment\ncentroid: the centroid of a region is the geometric center of the region; laminas are often represented by regions in the plane; if the lamina has a constant density, the center of mass of the lamina depends only on the shape of the corresponding planar region; in this case, the center of mass of the lamina corresponds to the centroid of the representative region\nlamina: a thin sheet"
+        },
+        {
+          "module_id": "m53649",
+          "book_id": "calculus-volume-1",
+          "title": "Moments and Centers of Mass",
+          "section": "",
+          "excerpt": "In this section, we consider centers of mass (also called centroids, under certain conditions) and moments. The basic idea of the center of mass is the notion of a balancing point. Many of us have seen performers who spin plates on the ends of sticks. The performers try to keep several of them spinning without allowing any of them to drop. If we look at a single plate (without spinning it), there is a sweet spot on the plate where it balances perfectly on the stick. If we put the stick anywhere "
+        }
+      ]
+    },
+    {
+      "question": "approximate a function with a tangent line near a point",
+      "expected": [
+        "m53605"
+      ],
+      "rank": 1,
+      "top_hits": [
+        {
+          "module_id": "m53605",
+          "book_id": "calculus-volume-1",
+          "title": "Linear Approximations and Differentials",
+          "section": "Linear Approximation of a Function at a Point",
+          "excerpt": "Consider a function f that is differentiable at a point x=a. Recall that the tangent line to the graph of f at a is given by the equation\ny=f(a)+f\u2032(a)(x\u2212a).\nFor example, consider the function f(x)=1/x at a=2. Since f is differentiable at x=2 and f\u2032(x)=\u22121/(x^2), we see that f\u2032(2)=\u22121/4. Therefore, the tangent line to the graph of f at a=2 is given by the equation\ny=1/2\u2212(1/4)(x\u22122).\n[Figure](a) shows a graph of f(x)=1/x along with the tangent line to f at x=2. Note that for x near 2, the graph of th"
+        },
+        {
+          "module_id": "m53605",
+          "book_id": "calculus-volume-1",
+          "title": "Linear Approximations and Differentials",
+          "section": "Linear Approximation of a Function at a Point",
+          "excerpt": "Therefore, the tangent line gives us a fairly good approximation of f(2.1) ([Figure](b)). However, note that for values of x far from 2, the equation of the tangent line does not give us a good approximation. For example, if x=10, the y-value of the corresponding point on the tangent line is\ny=1/2\u2212(1/4)(10\u22122)=1/2\u22122=\u22121.5,\nwhereas the value of the function at x=10 is f(10)=0.1.\n[Figure] (a) The tangent line to f(x)=1/x at x=2 provides a good approximation to f for x near 2. (b) At x=2.1, the value"
+        },
+        {
+          "module_id": "m53575",
+          "book_id": "calculus-volume-1",
+          "title": "Differentiation Rules",
+          "section": "Combining Differentiation Rules",
+          "excerpt": "e] (a) One section of the racetrack can be modeled by the function f(x)=x^3+3x^2+x. (b) The front corner of the grandstand is located at (\u22121.9,2.8). - Physicists have determined that drivers are most likely to lose control of their cars as they are coming into a turn, at the point where the slope of the tangent line is 1. Find the (x,y) coordinates of this point near the turn. - Find an equation of the tangent line to the curve at this point. - To determine whether the spectators are in danger i"
+        }
+      ]
+    },
+    {
+      "question": "average value of a function",
+      "expected": [
+        "m53631"
+      ],
+      "rank": 3,
+      "top_hits": [
+        {
+          "module_id": "m53632",
+          "book_id": "calculus-volume-1",
+          "title": "The Fundamental Theorem of Calculus",
+          "section": "The Mean Value Theorem for Integrals",
+          "excerpt": "Problem: Finding the Average Value of a Function. Find the average value of the function f(x)=8\u22122x over the interval [0,4] and find c such that f(c) equals the average value of the function over [0,4]. Solution: The formula states the mean value of f(x) is given by (1/(4\u22120))(\u222b)_0^4(8\u22122x)dx. We can see in [Figure] that the function represents a straight line and forms a right triangle bounded by the x- and y-axes. The area of the triangle is A=(1/2)(base)(height). We have A=(1/2)(4)(8)=16. The av"
+        },
+        {
+          "module_id": "m53632",
+          "book_id": "calculus-volume-1",
+          "title": "The Fundamental Theorem of Calculus",
+          "section": "The Mean Value Theorem for Integrals",
+          "excerpt": "Problem: Find the average value of the function f(x)=x/2 over the interval [0,6] and find c such that f(c) equals the average value of the function over [0,6]. Solution: Average value=1.5;c=3 Hint. Use the procedures from [Example] to solve the problem\nProblem: Finding the Point Where a Function Takes on Its Average Value. Given (\u222b)_0^3x^2dx=9, find c such that f(c) equals the average value of f(x)=x^2 over [0,3]. Solution: We are looking for the value of c such that f(c)=(1/(3\u22120))(\u222b)_0^3x^2dx=("
+        },
+        {
+          "module_id": "m53631",
+          "book_id": "calculus-volume-1",
+          "title": "The Definite Integral",
+          "section": "Average Value of a Function",
+          "excerpt": "Problem: Finding the Average Value of a Linear Function. Find the average value of f(x)=x+1 over the interval [0,5]. Solution: First, graph the function on the stated interval, as shown in [Figure]. [Figure] The graph shows the area under the function f(x)=x+1 over [0,5]. The region is a trapezoid lying on its side, so we can use the area formula for a trapezoid A=(1/2)h(a+b), where h represents height, and a and b represent the two parallel sides. Then, (\u222b)_0^5x+1dx =1/2h(a+b); =1/2\u00b75\u00b7(1+6); =3"
+        }
+      ]
+    }
+  ],
+  "warm_sequential": {
+    "requests": 180,
+    "p50_ms": 4.892353899776936,
+    "p95_ms": 14.60033399052918,
+    "max_ms": 63.21604084223509,
+    "requests_per_second": 158.3224620369581
+  },
+  "warm_four_workers": {
+    "requests": 180,
+    "p50_ms": 6.822541356086731,
+    "p95_ms": 12.48612510971725,
+    "max_ms": 28.56837515719235,
+    "requests_per_second": 530.0947167575088
+  },
+  "warm_fresh_client_each_request": {
+    "requests": 36,
+    "p50_ms": 5.882333382032812,
+    "p95_ms": 15.17749996855855,
+    "max_ms": 16.863707918673754
+  },
+  "primary_store_bytes": 1792101
+}

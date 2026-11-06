@@ -1,0 +1,60 @@
+[
+  {
+    "question": "equation of the tangent line to a curve",
+    "expect": [
+      "m53495",
+      "m53575",
+      "m53573"
+    ]
+  },
+  {
+    "question": "find dy/dx when x and y are mixed together in one equation",
+    "expect": [
+      "m53585"
+    ]
+  },
+  {
+    "question": "indeterminate form 0/0 limit",
+    "expect": [
+      "m53619",
+      "m53491",
+      "m53492"
+    ]
+  },
+  {
+    "question": "how are derivatives and integrals related",
+    "expect": [
+      "m53632"
+    ]
+  },
+  {
+    "question": "estimate a root of an equation by iteration",
+    "expect": [
+      "m53620"
+    ]
+  },
+  {
+    "question": "length of a curve",
+    "expect": [
+      "m53644"
+    ]
+  },
+  {
+    "question": "center of mass of a thin plate",
+    "expect": [
+      "m53649"
+    ]
+  },
+  {
+    "question": "approximate a function with a tangent line near a point",
+    "expect": [
+      "m53605"
+    ]
+  },
+  {
+    "question": "average value of a function",
+    "expect": [
+      "m53631"
+    ]
+  }
+]
