@@ -274,4 +274,6 @@ The design choices, full protocol, output formats and benchmark TODOs are in [be
 **Benchmarking**
 - The `rag` and `full` arms can't run until the integration items above are done. The benchmark's own TODOs are in
   [benchmarking/README.md](benchmarking/README.md#todo).
-- No baseline results committed yet.
+- Raw-model baseline (gemma3:4b): 73.7% on MATH-500, in line with the published 75.6, and 100% on the 27-problem calculus starter set.
+  The calculus set needs harder problems before it can show whether the system helps. Details are in
+  [benchmarking/README.md](benchmarking/README.md#baseline-results).

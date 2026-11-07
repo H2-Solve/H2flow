@@ -20,6 +20,35 @@ The first target is **`gemma3:4b`** (Ollama). Any Ollama model can be passed wit
 | `math500` | 500 | General math ([MATH-500](https://huggingface.co/datasets/HuggingFaceH4/MATH-500)); downloaded on first use into `.cache/` |
 | `calculus` | 27 (starter) | H2flow's domain: limits, derivatives, definite integrals, applications ([data/calculus_v1.jsonl](data/calculus_v1.jsonl)) |
 
+## Baseline results
+
+`base` arm, gemma3:4b (Q4_K_M, digest `68ceab7e468a`), default protocol, harness commit `eb0298c`, RTX 3080 10 GB, Ollama 0.40.15.
+Full reports: [results/math500-base-gemma3-4b.md](results/math500-base-gemma3-4b.md) and
+[results/calculus-base-gemma3-4b.md](results/calculus-base-gemma3-4b.md).
+
+| Dataset | Problems × seeds | Accuracy (mean ± sd) | 95% CI | Per seed | Latency/problem |
+| --- | --- | --- | --- | --- | --- |
+| MATH-500 | 500 × 3 | **73.7** ± 2.4 | 70.2–77.1 | 73.8 / 76.0 / 71.2 | 8.5 s |
+| calculus v1 | 27 × 3 | **100.0** | 100.0–100.0 | 100 / 100 / 100 | 4.5 s |
+
+- **Calibration passes.** 73.7 is within 2 points of Google's published 75.6 (MATH, 0-shot), so the harness and grader behave as expected.
+- **MATH-500 breakdown.** Accuracy falls from 94.6 (level 1) to 49.5 (level 5). Weakest subjects: Intermediate Algebra (52.2), Precalculus (55.4) and Geometry (58.5).
+- **Failures.** Out of 1500 attempts, 364 are wrong answers and 0 are extraction failures. Another 31 come from repetition loops: 28 hit the
+  4096-token limit (`truncated`), and 3 were stopped by Ollama with "token repeat limit reached" (logged as `error`). All 31 are model failures,
+  not infrastructure faults.
+- **The calculus set is at ceiling.** Every problem was solved on every seed, so there is no room left to show the system improving on it.
+  Growing the set with harder problems is now the priority for calculus (see [TODO](#todo)).
+
+**Hand-check (protocol step 4).** 147 attempts reviewed:
+- 40 random MATH-500 wrong answers, plus a pattern scan of all 364 for units or text in the extracted answer.
+- 40 random MATH-500 correct answers.
+- All 27 calculus problems: every distinct extraction against its gold.
+- All 31 truncated or error attempts.
+
+One grader disagreement: `test/prealgebra/1865.json` seed 2 boxed `12^{\text{th}} grade` against gold `12`. It was graded wrong but is correct.
+That is 0.07 points, too small to change any reported number, so it was left as graded. No false positives were found. Calculus answers matched
+the gold in equivalent forms (for example, a product-rule derivative against the factored gold).
+
 ## Quick start
 
 Requirements: [Ollama](https://ollama.com) running, with the model pulled.
@@ -174,10 +203,12 @@ Published Gemma 3 4B scores (for calibration, not comparison):
 - [ ] `sympy` arm: token counts for the intent call, and running it with models other than `gemma3:4b`. Both need `verification.py` to expose them.
 
 **Benchmark side:**
-- [ ] Run and commit the `base` baseline on MATH-500 and calculus (gemma3:4b, default protocol). This is the first milestone.
-- [ ] Hand-check about 50 graded attempts for that baseline (protocol step 4).
-- [ ] Grow the calculus set from 27 to about 200 problems (Calculus I/II, written for the benchmark), keeping `expected_operation` labels. Add full
-      intent labels (expression, bounds) to score intent extraction beyond the operation.
+- [x] Run and commit the `base` baseline on MATH-500 and calculus (gemma3:4b, default protocol). See [Baseline results](#baseline-results).
+- [x] Hand-check about 50 graded attempts for that baseline (protocol step 4).
+- [ ] **Priority:** the base model scores 100% on calculus v1, so the set can't show improvement. Grow it from 27 to about 200 problems, weighted
+      toward harder items (multi-step integration, integration by parts and substitution, series, related rates, optimization). Write it as
+      `calculus_v2` so v1 results stay comparable. Keep the problems Calculus I/II, written for the benchmark, with `expected_operation`
+      labels. Add full intent labels (expression, bounds) to score intent extraction beyond the operation.
 - [ ] Add a small "unsupported" set (non-math and conceptual questions) to check the system routes them away from SymPy.
 - [ ] Optional arm E: base model, best-of-n majority vote with the same number of LLM calls as `full`, to test whether the system beats just
       spending more compute.
