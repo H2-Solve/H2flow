@@ -29,6 +29,7 @@ plain retrieval-based answer.
 | RAG prompting and generation | `RAG/main.py` | On main (prototype, dummy retriever) |
 | HTTP API | `backend/` | *(not on main: `dylan/backend-api-starter`)* |
 | Frontend UI | — | *(planned; the `Frontend` branch has no UI code yet)* |
+| Accuracy benchmarking (raw model vs. system) | `benchmarking/` | Base and SymPy arms ready; RAG and full-system arms pending |
 
 ## Components
 
@@ -205,7 +206,37 @@ throwaway indexes:
 H2FLOW_TEST_ES_URL=http://localhost:9201 python -m pytest -q
 ```
 
-The tests cover `search/` only. API tests are in `tests/test_api.py` *(not on main: `dylan/backend-api-starter`)*.
+The tests cover `search/` and `benchmarking/` (the benchmark tests need `benchmarking/requirements.txt` and use a fake
+Ollama server). API tests are in `tests/test_api.py` *(not on main: `dylan/backend-api-starter`)*.
+
+## Benchmarking
+
+`benchmarking/` compares the raw model with H2flow on math problem sets, using the same problems, decoding settings and
+grader for both. It reports accuracy with confidence intervals, a paired per-problem comparison, and cost
+(LLM calls and latency).
+
+- **Arms:** `base` (raw `gemma3:4b`) and `sympy` (the intent extraction → SymPy path in `verification.py`) are ready.
+  `rag` and `full` (`rag_with_verification`) are adapters waiting on the integration items listed under Outstanding issues.
+- **Datasets:** MATH-500 (general math, downloaded on first use) and a starter calculus set written for this benchmark, with
+  SymPy-computed answers.
+- **Protocol:** 3 seeds at temperature 0.2. Answers are graded with Math-Verify, which is independent of the system's own
+  verification code. Each run saves a manifest recording the model digest, prompt, dataset hash and machine.
+
+Ollama must be running. Then:
+
+```bash
+pip install -r benchmarking/requirements.txt
+```
+
+```bash
+python -m benchmarking.run --arm base --dataset math500
+```
+
+```bash
+python -m benchmarking.report benchmarking/results/raw/<run>
+```
+
+The design choices, full protocol, output formats and benchmark TODOs are in [benchmarking/README.md](benchmarking/README.md).
 
 ## Outstanding issues / not yet implemented
 
@@ -239,3 +270,8 @@ The tests cover `search/` only. API tests are in `tests/test_api.py` *(not on ma
 - `sympy` is missing from `requirements.txt`. The dependencies are split between `requirements.txt` and `search/requirements.txt`.
 - The default Elasticsearch URL (`:9200`) doesn't match the port in `compose.yaml` (`:9201`).
 - No CI, lockfile, or agreed Python version.
+
+**Benchmarking**
+- The `rag` and `full` arms can't run until the integration items above are done. The benchmark's own TODOs are in
+  [benchmarking/README.md](benchmarking/README.md#todo).
+- No baseline results committed yet.
