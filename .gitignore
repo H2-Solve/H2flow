@@ -4,3 +4,7 @@ __pycache__/
 *.py[cod]
 .env
 .DS_Store
+
+# benchmarking
+benchmarking/.cache/
+benchmarking/results/raw/

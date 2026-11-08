@@ -1,0 +1,106 @@
+{
+  "summaries": [
+    {
+      "run_id": "calculus-base-gemma3-4b-20261107-155720",
+      "arm": "base",
+      "dataset": "calculus",
+      "model": "gemma3:4b",
+      "model_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+      "quantization": "Q4_K_M",
+      "options": {
+        "temperature": 0.2,
+        "num_ctx": 8192,
+        "num_predict": 4096
+      },
+      "prompt": "base_v1",
+      "n_problems": 27,
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "per_seed": {
+        "0": {
+          "correct": 27,
+          "n": 27,
+          "accuracy": 1.0,
+          "wilson95": [
+            0.8754409628553641,
+            1.0
+          ]
+        },
+        "1": {
+          "correct": 27,
+          "n": 27,
+          "accuracy": 1.0,
+          "wilson95": [
+            0.8754409628553641,
+            1.0
+          ]
+        },
+        "2": {
+          "correct": 27,
+          "n": 27,
+          "accuracy": 1.0,
+          "wilson95": [
+            0.8754409628553641,
+            1.0
+          ]
+        }
+      },
+      "accuracy_mean": 1.0,
+      "accuracy_sd_over_seeds": 0.0,
+      "bootstrap95_over_problems": [
+        1.0,
+        1.0
+      ],
+      "outcomes": {
+        "correct": 81
+      },
+      "routes": {
+        "model": 81
+      },
+      "groups": {
+        "topic": {
+          "algebra": {
+            "accuracy": 1.0,
+            "n": 6
+          },
+          "applications": {
+            "accuracy": 1.0,
+            "n": 18
+          },
+          "derivatives": {
+            "accuracy": 1.0,
+            "n": 21
+          },
+          "integrals": {
+            "accuracy": 1.0,
+            "n": 18
+          },
+          "limits": {
+            "accuracy": 1.0,
+            "n": 18
+          }
+        }
+      },
+      "cost": {
+        "latency_s": 4.517369396296281,
+        "llm_calls": 1.0,
+        "prompt_tokens": 48.18518518518518,
+        "completion_tokens": 352.75308641975306
+      },
+      "intent": null,
+      "complete": true
+    }
+  ],
+  "comparisons": [],
+  "grader": {
+    "grader": "math-verify",
+    "extraction": "default LatexExtractionConfig + ExprExtractionConfig",
+    "timeouts": "disabled",
+    "math-verify": "0.9.0",
+    "sympy": "1.14.0",
+    "antlr4-python3-runtime": "4.13.2"
+  }
+}

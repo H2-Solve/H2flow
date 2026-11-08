@@ -1,0 +1,5 @@
+# Benchmark harness. The base arm needs only these plus a running Ollama.
+math-verify[antlr4_13_2]==0.9.0
+sympy>=1.13
+pytest>=8.3,<10.0
+# The sympy arm also imports verification.py: install the root requirements.txt as well.

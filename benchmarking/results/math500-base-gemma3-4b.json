@@ -1,0 +1,144 @@
+{
+  "summaries": [
+    {
+      "run_id": "math500-base-gemma3-4b-20261107-115144",
+      "arm": "base",
+      "dataset": "math500",
+      "model": "gemma3:4b",
+      "model_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+      "quantization": "Q4_K_M",
+      "options": {
+        "temperature": 0.2,
+        "num_ctx": 8192,
+        "num_predict": 4096
+      },
+      "prompt": "base_v1",
+      "n_problems": 500,
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "per_seed": {
+        "0": {
+          "correct": 369,
+          "n": 500,
+          "accuracy": 0.738,
+          "wilson95": [
+            0.6977463146741062,
+            0.7746243669051839
+          ]
+        },
+        "1": {
+          "correct": 380,
+          "n": 500,
+          "accuracy": 0.76,
+          "wilson95": [
+            0.7206724477826185,
+            0.7953627505813117
+          ]
+        },
+        "2": {
+          "correct": 356,
+          "n": 500,
+          "accuracy": 0.712,
+          "wilson95": [
+            0.6708097689717583,
+            0.7499573927711387
+          ]
+        }
+      },
+      "accuracy_mean": 0.7366666666666667,
+      "accuracy_sd_over_seeds": 0.02402776172125349,
+      "bootstrap95_over_problems": [
+        0.702,
+        0.7713333333333334
+      ],
+      "outcomes": {
+        "correct": 1105,
+        "wrong_answer": 364,
+        "truncated": 28,
+        "error": 3
+      },
+      "routes": {
+        "model": 1500
+      },
+      "groups": {
+        "subject": {
+          "Algebra": {
+            "accuracy": 0.9381720430107527,
+            "n": 372
+          },
+          "Counting & Probability": {
+            "accuracy": 0.7631578947368421,
+            "n": 114
+          },
+          "Geometry": {
+            "accuracy": 0.5853658536585366,
+            "n": 123
+          },
+          "Intermediate Algebra": {
+            "accuracy": 0.5223367697594502,
+            "n": 291
+          },
+          "Number Theory": {
+            "accuracy": 0.8387096774193549,
+            "n": 186
+          },
+          "Prealgebra": {
+            "accuracy": 0.7967479674796748,
+            "n": 246
+          },
+          "Precalculus": {
+            "accuracy": 0.5535714285714286,
+            "n": 168
+          }
+        },
+        "level": {
+          "1": {
+            "accuracy": 0.9457364341085271,
+            "n": 129
+          },
+          "2": {
+            "accuracy": 0.8740740740740741,
+            "n": 270
+          },
+          "3": {
+            "accuracy": 0.8698412698412699,
+            "n": 315
+          },
+          "4": {
+            "accuracy": 0.7135416666666666,
+            "n": 384
+          },
+          "5": {
+            "accuracy": 0.49502487562189057,
+            "n": 402
+          }
+        }
+      },
+      "cost": {
+        "latency_s": 8.480757560999987,
+        "llm_calls": 1.0,
+        "prompt_tokens": 98.99799599198397,
+        "completion_tokens": 962.4756179024716
+      },
+      "intent": null,
+      "complete": true,
+      "reference": {
+        "label": "Gemma 3 4B IT, MATH 0-shot (Google model card)",
+        "accuracy": 0.756,
+        "within_band": true
+      }
+    }
+  ],
+  "comparisons": [],
+  "grader": {
+    "grader": "math-verify",
+    "extraction": "default LatexExtractionConfig + ExprExtractionConfig",
+    "timeouts": "disabled",
+    "math-verify": "0.9.0",
+    "sympy": "1.14.0",
+    "antlr4-python3-runtime": "4.13.2"
+  }
+}
