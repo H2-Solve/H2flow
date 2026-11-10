@@ -1,6 +1,18 @@
-from langchain_ollama import ChatOllama
+from __future__ import annotations
+
+import os
+from typing import Any, Callable
+
 from langchain_core.prompts import ChatPromptTemplate
-import ollama
+from langchain_ollama import ChatOllama
+
+from search.retrieve import get_documents as retrieve_documents
+from verification import (
+    answers_are_equivalent,
+    extract_final_answer_from_response,
+    extract_math_intent,
+    solve_with_sympy,
+)
 
 llm = ChatOllama(
     model="gemma3:4b",
@@ -65,26 +77,13 @@ verification_prompt = ChatPromptTemplate.from_messages([
 ])
 
 
-def get_documents(query):
-    """
-    Interface to the separate Elasticsearch project.
-    Returns relevant documents.
-    """
-    pass
-
-
-def get_documents_dummy(query):
-    """
-    Dummy function to simulate Elasticsearch retrieval.
-    """
-    return [
-        {
-            "text": "The area of a circle is given by the formula A = πr^2, where r is the radius."
-        },
-        {
-            "text": "The circumference of a circle is given by C = 2πr."
-        }
-    ]
+def get_documents(query: str, top_k: int = 5, index: str | None = None) -> list[dict]:
+    """Retrieve textbook chunks from Elasticsearch for a user question."""
+    return retrieve_documents(
+        query,
+        top_k=top_k,
+        index=index or os.environ.get("H2FLOW_ES_INDEX", "textbook-chunks"),
+    )
 
 
 def format_context(documents):
@@ -95,10 +94,16 @@ def format_context(documents):
     context = []
 
     for i, document in enumerate(documents):
-        context.append(
-            f"""Document {i + 1}:
-{document["text"]}"""
+        source = " > ".join(
+            value for value in (
+                document.get("book_id"),
+                document.get("chapter"),
+                document.get("title"),
+                document.get("section"),
+            ) if value
         )
+        citation = f"Source: {source}\n" if source else ""
+        context.append(f"Document {i + 1}:\n{citation}{document.get('text', '')}")
 
     return "\n\n".join(context)
 
@@ -121,11 +126,11 @@ def generate_answer(prompt):
     return llm.invoke(prompt)
 
 
-def rag(query):
+def rag(query: str, top_k: int = 5, index: str | None = None):
     """
     Complete RAG pipeline.
     """
-    documents = get_documents_dummy(query)
+    documents = get_documents(query, top_k=top_k, index=index)
     context = format_context(documents)
     prompt = build_prompt(query, context)
     answer = generate_answer(prompt)
@@ -133,11 +138,58 @@ def rag(query):
     return answer
 
 
-# TODO: Implement the full RAG with SymPy verification and retry loops
-#       and as a single function for future API implementation)
-def rag_with_verification(question: str, max_retries: int = 3) -> str:
-    """Full pipeline: Problem Intent Extraction -> SymPy Truth -> RAG -> Verification & Retry"""
-    return ""
+def rag_with_verification(
+    question: str,
+    max_retries: int = 3,
+    top_k: int = 5,
+    index: str | None = None,
+    documents: list[dict] | None = None,
+    intent_extractor: Callable[[str], dict] = extract_math_intent,
+    answer_generator: Callable[[Any], Any] | None = None,
+) -> str:
+    """Generate a textbook-grounded answer and retry until SymPy verifies it."""
+    if max_retries < 1:
+        raise ValueError("max_retries must be at least 1")
+
+    retrieved_documents = documents if documents is not None else get_documents(
+        question, top_k=top_k, index=index
+    )
+    context = format_context(retrieved_documents)
+    intent = intent_extractor(question)
+    truth = solve_with_sympy(intent)
+
+    if truth is None:
+        response = (answer_generator or generate_answer)(
+            build_prompt(question, context)
+        )
+        return str(getattr(response, "content", response))
+
+    ground_truth = str(truth)
+    feedback = ""
+    for _ in range(max_retries):
+        response = (answer_generator or solver_llm.invoke)(
+            verification_prompt.format(
+                context=context,
+                question=question,
+                ground_truth=ground_truth,
+                retry_feedback=feedback,
+            )
+        )
+        text = str(getattr(response, "content", response))
+        answer = extract_final_answer_from_response(text)
+        variable = intent.get("variable") or "x"
+        if answers_are_equivalent(truth, answer, variable):
+            return text
+        feedback = (
+            "\nPrevious attempt was not verified. "
+            f"Expected an expression equivalent to {ground_truth}. "
+            "Recheck the algebra and output a new FINAL_ANSWER."
+        )
+
+    raise ValueError(
+        f"Unable to verify generated answer after {max_retries} attempts"
+    )
 
 
-print(rag("What is the area of a circle with radius 5?").content)
+if __name__ == "__main__":
+    print(rag("What is the area of a circle with radius 5?").content)

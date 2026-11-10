@@ -11,7 +11,9 @@ def review_es_client():
     Elasticsearch = pytest.importorskip("elasticsearch").Elasticsearch
     test_url = os.environ.get("H2FLOW_TEST_ES_URL")
     with Elasticsearch(
-        test_url or "http://localhost:9200", request_timeout=10, max_retries=0
+        test_url or os.environ.get("H2FLOW_ES_URL", "http://localhost:9201"),
+        request_timeout=10,
+        max_retries=0,
     ) as client:
         if not client.ping():
             if test_url:
