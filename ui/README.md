@@ -18,8 +18,9 @@ pip install -r requirements.txt -r ui/requirements.txt
 python -m uvicorn ui.connector:app --port 5001
 ```
 
-Then open `ui/H2Solve_v2_0.html` in your browser.
+Then open `ui/H2Solve_v2_0.html` in your browser. Run the command from the
+repository root; the connector also supports direct execution from any
+working directory as long as its dependencies are installed.
 
-## Not done yet
-
-The RAG result card is a placeholder; only the plain model's answer is connected so far.
+The RAG result card calls `POST /api/rag`. It requires Elasticsearch to be running,
+the textbook to be indexed, and Ollama to have `gemma3:4b` available.

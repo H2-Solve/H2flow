@@ -497,10 +497,6 @@ function App() {
       return;
     }
 
-    const categoryLabel = selected.length
-      ? selected.map((id) => CATEGORY_MAP[id].label).join(' + ')
-      : 'not selected';
-
     // No timeout: gemma3:4b can take a minute or more on a CPU.
     setLoading(true);
     setDefaultResult('Working… (the base model can take a minute)');
@@ -515,16 +511,26 @@ function App() {
       })
       .catch((err) => setDefaultResult(`Error: ${err.message}`));
 
-    // TODO: call POST /api/rag once the connector has it.
-    setRagResult(
-      `User wished to solve problem: "${trimmedPrompt}"\n` +
-      `using these selections: category = ${categoryLabel}` +
-      `${wasAutoDetected ? ' (auto-detected)' : ''}, model = ${modelLabel}\n\n` +
-      `[Placeholder — RAG is not connected yet. Once it is, this box ` +
-      `will show the answer generated using retrieved textbook context.]`
-    );
+    const ragPromise = postJSON('/api/rag', {
+      question: trimmedPrompt,
+      categories: selected,
+      top_k: 5,
+    })
+      .then((data) => {
+        const sources = (data.citations || []).map((citation, index) => {
+          const location = [citation.book_id, citation.chapter, citation.title, citation.section]
+            .filter(Boolean)
+            .join(' > ');
+          return `${index + 1}. ${location || 'Textbook source'}\n   ${citation.excerpt || ''}`;
+        }).join('\n\n');
+        setRagResult(
+          `${data.answer}\n\n— ${data.latency_s}s` +
+          (sources ? `\n\nSources:\n${sources}` : '\n\nNo textbook sources found.')
+        );
+      })
+      .catch((err) => setRagResult(`Error: ${err.message}`));
 
-    await basePromise;
+    await Promise.all([basePromise, ragPromise]);
     setLoading(false);
   }
 

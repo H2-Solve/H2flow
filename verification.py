@@ -36,9 +36,15 @@ def safe_parse(expr_str: str, local_dict: dict | None = None):
     return parse_expr(expr_str.strip(), local_dict=base_locals, transformations=transformations)
 
 
-def extract_math_intent(question: str, prompt_path: str = "intent_extraction_prompt.txt") -> dict:
+def extract_math_intent(
+    question: str,
+    prompt_path: str | None = None,
+) -> dict:
     """Uses the LLM to convert a natural language math question into JSON."""
-    system_prompt = Path(prompt_path).read_text()
+    path = Path(prompt_path) if prompt_path else Path(__file__).with_name(
+        "intent_extraction_prompt.txt"
+    )
+    system_prompt = path.read_text(encoding="utf-8")
     messages = [
         SystemMessage(content=system_prompt),
         HumanMessage(content=f"Question:\n{question}")

@@ -15,6 +15,7 @@ import os
 import sys
 
 from elasticsearch import Elasticsearch, helpers
+from elasticsearch.exceptions import ApiError
 
 from .bundle import collect_chunks, outline_lines, read_bundle
 from .parse_osbooks import parse_cnxml_file
@@ -66,11 +67,11 @@ MAPPING = {
 
 def get_client(url: str | None = None) -> Elasticsearch:
     # No auth: matches docker run with xpack.security.enabled=false.
-    return Elasticsearch(url or os.environ.get("H2FLOW_ES_URL") or "http://localhost:9200")
+    return Elasticsearch(url or os.environ.get("H2FLOW_ES_URL") or "http://localhost:9201")
 
 
 def add_connection_arguments(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("--es-url", help="Elasticsearch URL (default: H2FLOW_ES_URL or http://localhost:9200)")
+    parser.add_argument("--es-url", help="Elasticsearch URL (default: H2FLOW_ES_URL or http://localhost:9201)")
     parser.add_argument("--index", default=INDEX_NAME, help="Elasticsearch index name")
 
 
@@ -78,7 +79,17 @@ def create_index(es: Elasticsearch, index: str = INDEX_NAME, reset: bool = False
     if reset and es.indices.exists(index=index):
         es.indices.delete(index=index)
     if not es.indices.exists(index=index):
-        es.indices.create(index=index, body=MAPPING)
+        try:
+            es.indices.create(
+                index=index,
+                settings=MAPPING["settings"],
+                mappings=MAPPING["mappings"],
+            )
+        except ApiError as exc:
+            details = getattr(exc, "body", None) or str(exc)
+            raise RuntimeError(
+                f"Unable to create Elasticsearch index {index!r}: {details}"
+            ) from exc
 
 
 def build_actions(chunks, index: str = INDEX_NAME) -> list[dict]:
@@ -100,8 +111,19 @@ def build_actions(chunks, index: str = INDEX_NAME) -> list[dict]:
 
 def bulk_index(es: Elasticsearch, chunks, index: str = INDEX_NAME) -> int:
     actions = build_actions(chunks, index)
-    helpers.bulk(es, actions)
-    return len(actions)
+    indexed, errors = helpers.bulk(
+        es,
+        actions,
+        raise_on_error=False,
+        raise_on_exception=True,
+    )
+    if errors:
+        first = errors[0]
+        raise RuntimeError(
+            f"Elasticsearch rejected {len(errors)} documents while indexing "
+            f"{index!r}; first error: {first}"
+        )
+    return indexed
 
 
 def main() -> None:

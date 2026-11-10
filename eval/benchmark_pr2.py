@@ -72,7 +72,8 @@ def main():
     books = read_bundle(args.bundle)
     if selected:
         books = [book for book in books if book.slug == selected]
-    memberships = Counter(module_id for book in books for module_id, _ in book.modules)
+    memberships = Counter(
+        module_id for book in books for module_id, _ in book.modules)
     content_hashes = Counter(
         hashlib.sha256(" ".join(chunk.text.split()).encode()).hexdigest()
         for chunk in chunks
@@ -118,7 +119,8 @@ def main():
             start = time.perf_counter()
             indexed = bulk_index(es, chunks, index=index)
             output["bulk_index_seconds"] = time.perf_counter() - start
-            output["bulk_documents_per_second"] = indexed / output["bulk_index_seconds"]
+            output["bulk_documents_per_second"] = indexed / \
+                output["bulk_index_seconds"]
             start = time.perf_counter()
             es.indices.refresh(index=index)
             output["refresh_seconds"] = time.perf_counter() - start
@@ -142,10 +144,11 @@ def main():
                 [result["rank"] for result in results[: len(tuning)]]
             )
             output["holdout_module_metrics"] = summarize(
-                [result["rank"] for result in results[len(tuning) :]]
+                [result["rank"] for result in results[len(tuning):]]
             )
             output["questions_with_duplicate_top5_text"] = sum(
-                len(hashes := [" ".join(hit["text"].split()) for hit in result["hits"]])
+                len(hashes := [" ".join(hit["text"].split())
+                    for hit in result["hits"]])
                 != len(set(hashes))
                 for result in results
             )
@@ -170,7 +173,8 @@ def main():
                 }
                 for result in results
             ]
-            queries = [question["question"] for question in questions] * args.repeat
+            queries = [question["question"]
+                       for question in questions] * args.repeat
 
             def timed_search(query):
                 start = time.perf_counter()
@@ -199,8 +203,10 @@ def main():
                 with Elasticsearch(
                     args.es_url, request_timeout=30, max_retries=0
                 ) as fresh:
-                    get_documents(question["question"], top_k=5, index=index, es=fresh)
-                fresh_client_latencies.append((time.perf_counter() - start) * 1000)
+                    get_documents(question["question"],
+                                  top_k=5, index=index, es=fresh)
+                fresh_client_latencies.append(
+                    (time.perf_counter() - start) * 1000)
             output["warm_fresh_client_each_request"] = latency_summary(
                 fresh_client_latencies
             )
@@ -210,7 +216,8 @@ def main():
         finally:
             es.indices.delete(index=index)
 
-    Path(args.output).write_text(json.dumps(output, indent=2) + "\n", encoding="utf-8")
+    Path(args.output).write_text(json.dumps(
+        output, indent=2) + "\n", encoding="utf-8")
     print(
         json.dumps(
             {key: value for key, value in output.items() if key != "results"}, indent=2

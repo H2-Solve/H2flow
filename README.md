@@ -26,7 +26,7 @@ plain retrieval-based answer.
 | --- | --- | --- |
 | Textbook ingest, indexing, retrieval, evaluation | `search/`, `eval/` | On main |
 | SymPy verification | `verification.py`, `intent_extraction_prompt.txt` | On main (basic operations) |
-| RAG prompting and generation | `RAG/main.py` | On main (prototype, dummy retriever) |
+| RAG prompting and generation | `RAG/main.py` | Elasticsearch retrieval and SymPy-verified retries |
 | HTTP API | `backend/` | *(not on main: `dylan/backend-api-starter`)* |
 | Frontend UI | — | *(planned; the `Frontend` branch has no UI code yet)* |
 | Accuracy benchmarking (raw model vs. system) | `benchmarking/` | Base and SymPy arms ready; RAG and full-system arms pending |
@@ -75,6 +75,8 @@ Turns the OpenStax CNXML bundles (for example
 - `verification_prompt` + `solver_llm` (temperature 0.2, so retries can differ): give the model the verified answer
   and ask it to end with `FINAL_ANSWER: <sympy expression>`. Any retry feedback is added to this prompt.
 - `rag_with_verification(question, max_retries=3)`: the full pipeline shown above, and the function the API will call.
+  It retrieves from Elasticsearch, includes source metadata in the context, and retries generation until the
+  `FINAL_ANSWER` is equivalent to the SymPy result.
 
 ### HTTP API (`backend/`) *(not on main: `dylan/backend-api-starter`)*
 
@@ -102,9 +104,11 @@ A FastAPI app. The answer provider is chosen in `get_answer_service()`, which is
   Invalid input returns HTTP 422. If the answer service raises `ServiceUnavailable`, the API returns HTTP 503.
   The branch has a `DemoAnswerService` that only answers "Solve 2x + 3 = 7", plus API tests.
 
-### Frontend *(planned; the `Frontend` branch has no UI code yet)*
+### Frontend (`ui/`)
 
-Takes a question as input and shows the answer, steps, citations and errors, using the API above.
+The standalone HTML page calls `ui/connector.py` for both the base-model result and
+the Elasticsearch-backed verified RAG result. The RAG card displays retrieved textbook
+source metadata and excerpts.
 
 ## Setup
 
@@ -241,10 +245,9 @@ The design choices, full protocol, output formats and benchmark TODOs are in [be
 ## Outstanding issues / not yet implemented
 
 **Integration**
-- `RAG/main.py` still uses `get_documents_dummy`. `get_documents` is a stub and needs to call `search.retrieve.get_documents`
-  and pass on the citation metadata.
-- `rag_with_verification` is not implemented: it returns `""`. Intent → SymPy → generation → check → retry is not wired together yet.
-- `RAG/main.py` runs a sample query when imported. It needs to be safe to import (and packaged) before the API can call it.
+- The RAG pipeline now calls `search.retrieve.get_documents`, includes textbook source metadata in its prompt, and is
+  safe to import without running a model query.
+- `rag_with_verification` now wires intent extraction, SymPy solving, generation, `FINAL_ANSWER` parsing, and retries.
 - The API is not merged *(`dylan/backend-api-starter`, branched from the initial commit, so it needs a rebase)*. It only has
   the demo answer service; the live RAG adapter, timeouts, CORS origins and deployment config are still to do.
 - Citation format mismatch: the API's `Citation.page` has no source, because chunks have `module_id`/`section`/`chapter`
@@ -268,7 +271,7 @@ The design choices, full protocol, output formats and benchmark TODOs are in [be
 
 **Project setup**
 - `sympy` is missing from `requirements.txt`. The dependencies are split between `requirements.txt` and `search/requirements.txt`.
-- The default Elasticsearch URL (`:9200`) doesn't match the port in `compose.yaml` (`:9201`).
+- The default Elasticsearch URL is `http://localhost:9201`, matching `compose.yaml`; `H2FLOW_ES_URL` can override it.
 - No CI, lockfile, or agreed Python version.
 
 **Benchmarking**
