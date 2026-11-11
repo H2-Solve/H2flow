@@ -4,3 +4,6 @@ __pycache__/
 *.py[cod]
 .env
 .DS_Store
+eval/baseline*.json
+out.txt
+outline.txt
