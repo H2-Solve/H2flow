@@ -11,9 +11,11 @@ H2 Solve is the web page for asking H2flow a math problem. It shows the plain mo
 
 ## Run it
 
-**Windows:** double-click `ui/start.bat`. It starts Ollama, sets up `.venv` and the packages if needed,
-starts the connector, and opens the page. Keep its window open while you use the page; press Ctrl+C to stop.
-You only need [Ollama](https://ollama.com) and Python installed.
+**Windows:** double-click `ui/start.bat`. It starts Ollama and Docker, sets up `.venv`, the packages,
+Elasticsearch and the textbook index if needed, starts the connector, and opens the page. The first run takes a few
+minutes. Keep its window open while you use the page; press Ctrl+C to stop.
+You need [Ollama](https://ollama.com), Python, git, and [Docker Desktop](https://www.docker.com/products/docker-desktop)
+(Docker only for the RAG card).
 
 **Manually**, from the repo root with Ollama running:
 

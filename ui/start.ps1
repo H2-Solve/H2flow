@@ -51,22 +51,61 @@ if ($LASTEXITCODE -ne 0) {
 }
 Write-Host 'Packages are installed.'
 
-# Optional: the RAG card needs Elasticsearch (Docker) and an indexed textbook.
-Step 'Elasticsearch (for the RAG card)'
-if (Get-Command docker -ErrorAction SilentlyContinue) {
-    docker compose up -d
+# The RAG card needs Elasticsearch (in Docker) with the textbook indexed.
+# Any problem here is a warning only: the Default card works without it.
+function Start-Rag {
+    $esUrl = 'http://127.0.0.1:9201'
+    $docker = 'C:\Program Files\Docker\Docker\resources\bin\docker.exe'
+    $dockerApp = 'C:\Program Files\Docker\Docker\Docker Desktop.exe'
+    $bundle = Join-Path (Split-Path $root -Parent) 'osbooks-calculus-bundle'
+
+    if (Get-Command docker -ErrorAction SilentlyContinue) { $docker = 'docker' }
+    elseif (-not (Test-Path $docker)) { return 'Docker is not installed (https://www.docker.com/products/docker-desktop).' }
+
+    & $docker info *> $null
     if ($LASTEXITCODE -ne 0) {
-        Write-Host 'Could not start Elasticsearch. Is Docker Desktop open? The RAG card will show an error.' -ForegroundColor Yellow
-    } elseif (-not (Test-Url 'http://localhost:9201/textbook-chunks/_count')) {
-        Write-Host 'Elasticsearch may still be starting, or the textbook is not indexed yet. To index it:' -ForegroundColor Yellow
-        Write-Host '  git clone https://github.com/openstax/osbooks-calculus-bundle ..\osbooks-calculus-bundle'
-        Write-Host '  .venv\Scripts\python -m search.index --bundle ..\osbooks-calculus-bundle --book calculus-volume-1 --reset'
-    } else {
-        Write-Host 'Elasticsearch is running with the textbook indexed.'
+        if (-not (Test-Path $dockerApp)) { return 'Docker is not running. Open Docker Desktop and run this again.' }
+        Write-Host 'Starting Docker Desktop (can take a minute)...'
+        Start-Process $dockerApp
+        $deadline = (Get-Date).AddMinutes(3)
+        do {
+            if ((Get-Date) -gt $deadline) { return 'Docker Desktop did not start. Open it, wait for "Engine running", and run this again.' }
+            Start-Sleep -Seconds 3
+            & $docker info *> $null
+        } while ($LASTEXITCODE -ne 0)
     }
-} else {
-    Write-Host 'Docker is not installed, so the RAG card will show an error. The Default card still works.' -ForegroundColor Yellow
+
+    & $docker compose up -d | Out-Host
+    if ($LASTEXITCODE -ne 0) { return 'Could not start the Elasticsearch container; see the messages above.' }
+    Write-Host 'Waiting for Elasticsearch...'
+    $deadline = (Get-Date).AddMinutes(2)
+    while (-not (Test-Url "$esUrl/_cluster/health")) {
+        if ((Get-Date) -gt $deadline) { return 'Elasticsearch did not come up in time. Run this again in a minute.' }
+        Start-Sleep -Seconds 2
+    }
+
+    # 127.0.0.1, not localhost: avoids the Windows IPv6 delay. The connector inherits this.
+    $env:H2FLOW_ES_URL = $esUrl
+
+    $count = 0
+    try { $count = (Invoke-RestMethod "$esUrl/textbook-chunks/_count" -TimeoutSec 5 -ErrorAction Stop).count } catch { }
+    if ($count -gt 0) { Write-Host "Elasticsearch is running with $count textbook chunks."; return $null }
+
+    Write-Host 'Setting up the textbook (first time only, a few minutes)...'
+    if (-not (Test-Path $bundle)) {
+        if (-not (Get-Command git -ErrorAction SilentlyContinue)) { return 'git is needed to download the textbook.' }
+        git clone --depth 1 https://github.com/openstax/osbooks-calculus-bundle $bundle | Out-Host
+        if ($LASTEXITCODE -ne 0) { return 'Could not download the textbook.' }
+    }
+    & $venvPython -m search.index --bundle $bundle --book calculus-volume-1 --reset | Out-Host
+    if ($LASTEXITCODE -ne 0) { return 'Indexing the textbook failed; see the messages above.' }
+    Write-Host 'Textbook indexed.'
+    return $null
 }
+
+Step 'Elasticsearch (for the RAG card)'
+$ragProblem = Start-Rag
+if ($ragProblem) { Write-Host "$ragProblem The RAG card will show an error; the Default card still works." -ForegroundColor Yellow }
 
 Step 'Connector'
 if (Test-Url "http://127.0.0.1:$port/api/model") {
