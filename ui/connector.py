@@ -9,7 +9,7 @@ Run from the repo root (it imports benchmarking/):
 Endpoints:
     GET  /api/model  {"model": "gemma3:4b"} if Ollama answers and the model is pulled, else 503
     POST /api/base   {"question": "..."} -> {"answer", "latency_s", "truncated"}, raw model, no retrieval
-    POST /api/rag    {"question": "...", "top_k": 5} -> verified RAG answer and citations
+    POST /api/rag    {"question": "...", "top_k": 5} -> RAG answer, "verified" flag and citations
 """
 
 from __future__ import annotations
@@ -29,9 +29,17 @@ if str(REPO_ROOT) not in sys.path:
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
+import sympy as sp
 
 from benchmarking.ollama_client import OllamaClient, OllamaError, default_host
-from RAG.main import get_documents, rag_with_verification
+from RAG.main import (
+    build_prompt,
+    format_context,
+    generate_answer,
+    get_documents,
+    rag_with_verification,
+)
+from verification import extract_final_answer_from_response, safe_parse
 
 # On Windows "localhost" tries IPv6 first and Ollama listens on IPv4 only,
 # which adds ~2 s to every call, so default to 127.0.0.1.
@@ -57,6 +65,34 @@ class Question(BaseModel):
     top_k: int = Field(default=5, ge=1, le=10)
 
 
+def boxed_latex(text: str) -> str | None:
+    """Contents of the last \\boxed{...}, matching nested braces. Already LaTeX."""
+    start = text.rfind("\\boxed{")
+    if start == -1:
+        return None
+    begin = start + len("\\boxed{")
+    depth = 1
+    for i in range(begin, len(text)):
+        if text[i] == "{":
+            depth += 1
+        elif text[i] == "}":
+            depth -= 1
+            if depth == 0:
+                return text[begin:i].strip() or None
+    return None
+
+
+def final_answer_latex(text: str) -> str | None:
+    """The FINAL_ANSWER line is SymPy syntax (e.g. 2*x**3/3); convert it to LaTeX."""
+    answer = extract_final_answer_from_response(text)
+    if not answer:
+        return None
+    try:
+        return sp.latex(safe_parse(answer))
+    except Exception:  # an unparseable answer just means no answer box
+        return None
+
+
 @app.get("/api/model")
 def model_status() -> dict:
     try:
@@ -76,7 +112,12 @@ def base_answer(body: Question) -> dict:
             MODEL, [{"role": "user", "content": prompt}], BASE_OPTIONS)
     except OllamaError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
-    return {"answer": res.content, "latency_s": round(res.latency_s, 1), "truncated": res.truncated}
+    return {
+        "answer": res.content,
+        "final_latex": boxed_latex(res.content),
+        "latency_s": round(res.latency_s, 1),
+        "truncated": res.truncated,
+    }
 
 
 @app.post("/api/rag")
@@ -85,13 +126,21 @@ def rag_answer(body: Question) -> dict:
     import time
 
     start = time.perf_counter()
+    question = body.question.strip()
+    verified = True
     try:
-        documents = get_documents(body.question.strip(), top_k=body.top_k)
-        answer = rag_with_verification(
-            body.question.strip(),
-            top_k=body.top_k,
-            documents=documents,
-        )
+        documents = get_documents(question, top_k=body.top_k)
+        try:
+            answer = rag_with_verification(question, top_k=body.top_k, documents=documents)
+        except ValueError as exc:
+            if "Unable to verify" not in str(exc):
+                raise
+            # Verification can fail even when the answer is right (e.g. the intent
+            # model garbles the formula SymPy checks against), and the pipeline
+            # discards its answer, so generate a plain RAG answer and flag it.
+            verified = False
+            response = generate_answer(build_prompt(question, format_context(documents)))
+            answer = str(getattr(response, "content", response))
     except OllamaError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
     except ValueError as exc:
@@ -110,6 +159,8 @@ def rag_answer(body: Question) -> dict:
     ]
     return {
         "answer": answer,
+        "verified": verified,
+        "final_latex": final_answer_latex(answer) or boxed_latex(answer),
         "citations": citations,
         "latency_s": round(time.perf_counter() - start, 1),
         "model": MODEL,

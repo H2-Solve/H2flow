@@ -7,10 +7,17 @@ H2 Solve is the web page for asking H2flow a math problem. It shows the plain mo
 - `H2Solve_v2_0.html`: the page itself. Open it in a browser; there's no build step.
 - `connector.py`: a small temporary stand-in that links the page to the local model. It is not the project's real backend and will be replaced by it.
 - `requirements.txt`: the extra Python packages the connector needs.
+- `start.bat` / `start.ps1`: one-click launcher for Windows (the `.bat` runs the `.ps1`).
 
 ## Run it
 
-From the repo root, with [Ollama](https://ollama.com) running:
+**Windows:** double-click `ui/start.bat`. It starts Ollama and Docker, sets up `.venv`, the packages,
+Elasticsearch and the textbook index if needed, starts the connector, and opens the page. The first run takes a few
+minutes. Keep its window open while you use the page; press Ctrl+C to stop.
+You need [Ollama](https://ollama.com), Python, git, and [Docker Desktop](https://www.docker.com/products/docker-desktop)
+(Docker only for the RAG card).
+
+**Manually**, from the repo root with Ollama running:
 
 ```
 ollama pull gemma3:4b
