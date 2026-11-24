@@ -1,0 +1,98 @@
+{
+  "run_id": "calculus-full-gemma3-4b-20261124-173120",
+  "started_at": "2026-11-24T17:31:30",
+  "command": [
+    "C:\\Users\\Me\\Desktop\\H2flow\\benchmarking\\run.py",
+    "--arm",
+    "full",
+    "--dataset",
+    "calculus",
+    "--limit",
+    "2",
+    "--seeds",
+    "0"
+  ],
+  "config": {
+    "arm": "full",
+    "dataset": "calculus",
+    "model": "gemma3:4b",
+    "seeds": [
+      0
+    ],
+    "options": {
+      "temperature": 0.2,
+      "num_ctx": 8192,
+      "num_predict": 4096
+    },
+    "prompt": "base_v1",
+    "limit": 2
+  },
+  "arm": {
+    "name": "full",
+    "description": "H2flow end to end: RAG/main.py rag_with_verification() on main",
+    "model": "gemma3:4b",
+    "system_temperatures": {
+      "answer": 0.0,
+      "solver": 0.2,
+      "intent": 0.0
+    },
+    "harness_options_applied": {
+      "num_ctx": 8192,
+      "num_predict": 4096
+    },
+    "seed_rule": "call n of an attempt uses seed + 1000*n",
+    "top_k": 5,
+    "warnings": [
+      "--temperature 0.2 is not used: each model keeps the system's own temperature (system_temperatures)"
+    ],
+    "es_url": "http://localhost:9201",
+    "index": "textbook-chunks",
+    "index_docs": 4287,
+    "index_exercise_chunks": 1121,
+    "max_retries": 3,
+    "sympy_timeout_s": 30
+  },
+  "git": {
+    "sha": "5fcc4778cf50d72036db880de05a49d50e38f80e",
+    "branch": "main",
+    "dirty": true
+  },
+  "ollama": {
+    "host": "http://localhost:11434",
+    "version": "0.40.18"
+  },
+  "model": {
+    "name": "gemma3:4b",
+    "digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+    "family": "gemma3",
+    "parameter_size": "3.9B",
+    "quantization_level": "Q4_K_M",
+    "modelfile_parameters": "stop                           \"<end_of_turn>\"\ntemperature                    1\ntop_k                          64\ntop_p                          0.95"
+  },
+  "model_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+  "prompt_text": "{problem}\n\nPlease reason step by step, and put your final answer within \\boxed{}.\n",
+  "prompt_sha256": "1fe83bb37db7308ceaccd1fc407f3eefc7038fef511fb8c96b9b1f30266a27c4",
+  "dataset": {
+    "name": "calculus",
+    "source": "C:\\Users\\Me\\Desktop\\H2flow\\benchmarking\\data\\calculus_v1.jsonl",
+    "n_total": 27,
+    "n_run": 2
+  },
+  "dataset_sha256": "801472d32d91aee840839aa5030b1919609e59a8deba396dcb11b310d8823bb1",
+  "grader": {
+    "grader": "math-verify",
+    "extraction": "default LatexExtractionConfig + ExprExtractionConfig",
+    "timeouts": "disabled",
+    "math-verify": "0.9.0",
+    "sympy": "1.14.0",
+    "antlr4-python3-runtime": "4.13.2"
+  },
+  "machine": {
+    "os": "Windows-10-10.0.19044-SP0",
+    "python": "3.13.16",
+    "cpu": "AMD64 Family 23 Model 113 Stepping 0, AuthenticAMD",
+    "hostname": "DESKTOP-GROUVDA",
+    "gpu": "NVIDIA GeForce RTX 3080, 10240 MiB"
+  },
+  "finished_at": "2026-11-24T17:31:50"
+}

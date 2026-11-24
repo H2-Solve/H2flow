@@ -1,0 +1,80 @@
+{
+  "run_id": "math500-base-gemma3-4b-t0",
+  "started_at": "2026-11-24T15:51:12",
+  "command": [
+    "C:\\Users\\Me\\Desktop\\H2flow\\benchmarking\\run.py",
+    "--arm",
+    "base",
+    "--dataset",
+    "math500",
+    "--temperature",
+    "0",
+    "--seeds",
+    "0",
+    "--run-name",
+    "math500-base-gemma3-4b-t0"
+  ],
+  "config": {
+    "arm": "base",
+    "dataset": "math500",
+    "model": "gemma3:4b",
+    "seeds": [
+      0
+    ],
+    "options": {
+      "temperature": 0.0,
+      "num_ctx": 8192,
+      "num_predict": 4096
+    },
+    "prompt": "base_v1",
+    "limit": null
+  },
+  "arm": {
+    "name": "base",
+    "description": "raw model, zero-shot step-by-step prompt, final answer in \\boxed{}",
+    "prompt": "base_v1"
+  },
+  "git": {
+    "sha": "5fcc4778cf50d72036db880de05a49d50e38f80e",
+    "branch": "main",
+    "dirty": true
+  },
+  "ollama": {
+    "host": "http://localhost:11434",
+    "version": "0.40.18"
+  },
+  "model": {
+    "name": "gemma3:4b",
+    "digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+    "family": "gemma3",
+    "parameter_size": "3.9B",
+    "quantization_level": "Q4_K_M",
+    "modelfile_parameters": "stop                           \"<end_of_turn>\"\ntemperature                    1\ntop_k                          64\ntop_p                          0.95"
+  },
+  "model_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+  "prompt_text": "{problem}\n\nPlease reason step by step, and put your final answer within \\boxed{}.\n",
+  "prompt_sha256": "1fe83bb37db7308ceaccd1fc407f3eefc7038fef511fb8c96b9b1f30266a27c4",
+  "dataset": {
+    "name": "math500",
+    "source": "https://huggingface.co/datasets/HuggingFaceH4/MATH-500/resolve/main/test.jsonl",
+    "n_total": 500,
+    "n_run": 500
+  },
+  "dataset_sha256": "35dc41080a3680858b27fa7e0533d2d547825316fc5dafe5d316f4ccc5a06132",
+  "grader": {
+    "grader": "math-verify",
+    "extraction": "default LatexExtractionConfig + ExprExtractionConfig",
+    "timeouts": "disabled",
+    "math-verify": "0.9.0",
+    "sympy": "1.14.0",
+    "antlr4-python3-runtime": "4.13.2"
+  },
+  "machine": {
+    "os": "Windows-10-10.0.19044-SP0",
+    "python": "3.13.16",
+    "cpu": "AMD64 Family 23 Model 113 Stepping 0, AuthenticAMD",
+    "hostname": "DESKTOP-GROUVDA",
+    "gpu": "NVIDIA GeForce RTX 3080, 10240 MiB"
+  },
+  "finished_at": "2026-11-24T17:06:18"
+}

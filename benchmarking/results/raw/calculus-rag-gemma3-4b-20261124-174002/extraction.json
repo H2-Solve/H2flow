@@ -1,0 +1,18 @@
+{
+  "model": "gemma3:4b",
+  "model_digest": "68ceab7e468a31c988b44d5a4984a0e21f58c4f7158c6ce29c1804babac38df7",
+  "prompt": "extract_v1",
+  "prompt_sha256": "831c7904a7d5415a2e4f8e7409b0740d6831d000789106affb205354aef21ff6",
+  "prompt_text": "Below is a response that someone wrote to a math question.\nYour only job is to find the final answer that the response states, and copy it.\n\nRules:\n- Copy only what the response itself states as its final answer. Do not work anything out, check the work, or fix mistakes. Copy the answer even if you think it is wrong.\n- If the response mentions several values, copy the one it presents as its final answer.\n- If the response does not state a final answer (for example, it says it cannot answer, or it stops before reaching one), write \\boxed{NONE}. Never supply an answer the response does not state.\n- Leave out units and words. Keep the mathematical value, including constants such as pi.\n- Write the answer in LaTeX inside \\boxed{}, with LaTeX commands for functions and roots, such as \\sin, \\cos, \\ln, \\frac{a}{b}, \\sqrt{x}.\n- Reply with only the \\boxed{} answer and nothing else.\n\nResponse:\n{response}\n",
+  "options": {
+    "temperature": 0.0,
+    "seed": 0,
+    "num_ctx": 8192,
+    "num_predict": 256
+  },
+  "ollama": {
+    "host": "http://127.0.0.1:11434",
+    "version": "0.40.18"
+  },
+  "updated_at": "2026-11-24T18:26:20"
+}
