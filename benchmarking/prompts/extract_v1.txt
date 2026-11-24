@@ -1,0 +1,13 @@
+Below is a response that someone wrote to a math question.
+Your only job is to find the final answer that the response states, and copy it.
+
+Rules:
+- Copy only what the response itself states as its final answer. Do not work anything out, check the work, or fix mistakes. Copy the answer even if you think it is wrong.
+- If the response mentions several values, copy the one it presents as its final answer.
+- If the response does not state a final answer (for example, it says it cannot answer, or it stops before reaching one), write \boxed{NONE}. Never supply an answer the response does not state.
+- Leave out units and words. Keep the mathematical value, including constants such as pi.
+- Write the answer in LaTeX inside \boxed{}, with LaTeX commands for functions and roots, such as \sin, \cos, \ln, \frac{a}{b}, \sqrt{x}.
+- Reply with only the \boxed{} answer and nothing else.
+
+Response:
+{response}

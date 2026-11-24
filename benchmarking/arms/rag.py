@@ -1,46 +1,50 @@
-"""Arm B: model + textbook retrieval, i.e. RAG/main.py rag() with real Elasticsearch retrieval.
+"""Arm B: model + textbook retrieval, i.e. RAG/main.py rag() as it is on main.
 
-PENDING. Blocked on system code that is not on main yet:
-  TODO(rag-arm): RAG/main.py runs a sample query at import time; it must be importable
-                 without side effects (and importable as a package) before the harness can call it.
-  TODO(rag-arm): rag() still uses get_documents_dummy; get_documents must call
-                 search.retrieve.get_documents.
-  TODO(rag-arm): the RAG prompt does not ask for a marked final answer. The grader extracts
-                 \\boxed{} / FINAL_ANSWER / the last expression, so it may run without one,
-                 but extraction failures should be checked when this arm first runs.
-  TODO(rag-arm): rag() hard-codes the model and does not return token counts; record llm_calls=1
-                 and latency only, or have the system expose usage metadata.
+rag() retrieves the top 5 chunks from Elasticsearch, puts them in its prompt, and makes one
+model call. The arm runs that function unchanged; only the model object is swapped for one that
+goes through the harness's Ollama client (see _system.py), which keeps the system's
+temperature (0) and applies the harness's num_ctx, num_predict and seed.
 
-When unblocked, solve() should be roughly:
+Grading: the RAG prompt does not ask for a marked final answer, so Math-Verify reads the whole
+response (last \\boxed{} or expression). Check extraction failures in the report: they show
+how often the system's answer is unreadable, which is a real property of this arm.
 
-    from RAG.main import rag
-    start = time.perf_counter()
-    message = rag(problem.problem)
-    return Attempt(response=message.content, llm_calls=1, latency_s=time.perf_counter() - start,
-                   prompt_tokens=None, completion_tokens=None)
-
-Leakage control (benchmark side, already decided): run against an index without
-Exercises chunks when the problem set is drawn from the indexed books.
+Leakage: the index contains the textbooks' Exercises chunks with solutions. The calculus set
+is written for the benchmark, so this does not apply to it; the manifest records how many
+Exercises chunks the index holds.
 """
 
 from __future__ import annotations
 
-from ..datasets import Problem
-from . import Arm, ArmUnavailable, Attempt, RunContext
+import time
 
-BLOCKERS = [
-    "RAG/main.py executes a query on import",
-    "RAG/main.py rag() uses get_documents_dummy, not search.retrieve.get_documents",
-]
+from ..datasets import Problem
+from . import Arm, Attempt, RunContext
+from ._system import (TOP_K, HarnessModel, Usage, check_index, load_system, make_attempt, patched,
+                      recording_retriever, system_notes)
 
 
 class RagArm(Arm):
     name = "rag"
-    ready = False
-    description = "model + textbook retrieval (RAG/main.py rag())"
+    description = "model + textbook retrieval: RAG/main.py rag() on main"
+
+    def __init__(self):
+        self._system = None
 
     def setup(self, ctx: RunContext) -> dict:
-        raise ArmUnavailable("rag arm is pending: " + "; ".join(BLOCKERS) + " (see benchmarking/arms/rag.py)")
+        self._system = load_system()
+        return {**system_notes(self._system, ctx, ("answer",)), **check_index()}
 
     def solve(self, problem: Problem, seed: int, ctx: RunContext) -> Attempt:
-        raise ArmUnavailable("rag arm is pending")
+        system, usage = self._system, Usage()
+        model = HarnessModel("answer", ctx, system.temperatures["answer"], seed, usage)
+        targets = [(system.rag, "llm", model),
+                   (system.rag, "get_documents", recording_retriever(system.rag.get_documents, usage))]
+        start = time.perf_counter()
+        try:
+            with patched(targets):
+                message = system.rag.rag(problem.problem, top_k=TOP_K)
+        except Exception as exc:  # Elasticsearch or Ollama down, ...
+            return make_attempt(usage, usage.last_content or "", start, route=f"{usage.phase}_error",
+                                error=f"{exc.__class__.__name__}: {exc}")
+        return make_attempt(usage, str(getattr(message, "content", message)), start, error=None, route="rag")

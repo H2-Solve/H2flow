@@ -2,8 +2,8 @@
 
   base       raw model, step-by-step prompt                         ready
   sympy      intent extraction -> SymPy, base model as fallback     ready (uses verification.py)
-  rag        model + textbook retrieval (RAG/main.py rag())         pending, see rag.py
-  full       rag_with_verification (H2flow end to end)              pending, see full.py
+  rag        model + textbook retrieval (RAG/main.py rag())         ready (needs Elasticsearch + index)
+  full       rag_with_verification (H2flow end to end)              ready (needs Elasticsearch + index)
 """
 
 from __future__ import annotations

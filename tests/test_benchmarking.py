@@ -73,12 +73,15 @@ def test_paired_bootstrap_diff():
 
 # ---------- arms ----------
 
-def test_pending_arms_refuse_to_run():
-    ctx = RunContext(client=None, model="m", options={}, prompt_template="{problem}", prompt_name="p")
+def test_system_arms_need_elasticsearch(monkeypatch):
+    pytest.importorskip("langchain_ollama")
+    pytest.importorskip("elasticsearch")
+    monkeypatch.setenv("H2FLOW_ES_URL", "http://127.0.0.1:1")
+    ctx = RunContext(client=None, model="gemma3:4b", options={}, prompt_template="{problem}", prompt_name="p")
     for name in ("rag", "full"):
         arm = get_arm(name)
-        assert not arm.ready
-        with pytest.raises(ArmUnavailable):
+        assert arm.ready
+        with pytest.raises(ArmUnavailable, match="Elasticsearch"):
             arm.setup(ctx)
 
 
@@ -112,7 +115,7 @@ class FakeOllama(BaseHTTPRequestHandler):
                         "parameters": "temperature 1"})
             return
         FakeOllama.calls.append(req)
-        prompt = req["messages"][0]["content"]
+        prompt = "\n".join(m["content"] for m in req["messages"])
         reply = next((a for q, a in self.answers.items() if q in prompt), "no idea")
         self._send({"message": {"content": reply}, "done_reason": "stop",
                     "prompt_eval_count": 10, "eval_count": 20})
@@ -240,3 +243,183 @@ def test_jsonl_dataset_keeps_metadata(tiny_set):
 def test_client_reports_truncation(fake_ollama):
     res = OllamaClient(fake_ollama).chat("fake:1b", [{"role": "user", "content": "x"}], {})
     assert not res.truncated and res.completion_tokens == 20
+
+
+# ---------- rag and full arms: the system code on main, with a fake Ollama and fake retrieval ----------
+
+DOCS = [{"text": "The power rule: d/dx x^n = n x^(n-1).", "book_id": "calculus-volume-1", "module_id": "m1",
+         "section": "3.3 Differentiation Rules", "title": "Power rule", "chapter": "3"}]
+
+
+@pytest.fixture
+def system_arm(fake_ollama, monkeypatch):
+    """Returns (make(arm_name) -> (arm, ctx)) with Elasticsearch replaced by DOCS."""
+    pytest.importorskip("langchain_ollama")
+    pytest.importorskip("elasticsearch")
+    import RAG.main as rag_main
+    from benchmarking.arms import full, rag
+
+    for module in (rag, full):
+        monkeypatch.setattr(module, "check_index", lambda: {"index": "fake"})
+    monkeypatch.setattr(rag_main, "retrieve_documents", lambda query, top_k, index: DOCS[:top_k])
+    options = {"temperature": 0.2, "num_ctx": 8192, "num_predict": 4096}
+
+    def make(name):
+        arm = get_arm(name)
+        ctx = RunContext(client=OllamaClient(fake_ollama), model="gemma3:4b", options=options,
+                         prompt_template="{problem}", prompt_name="p")
+        notes = arm.setup(ctx)
+        assert notes["index"] == "fake"
+        return arm, ctx
+    return make
+
+
+def test_rag_arm_runs_system_rag_through_the_harness(system_arm):
+    import RAG.main as rag_main
+    from benchmarking.datasets import Problem
+
+    original_llm = rag_main.llm
+    arm, ctx = system_arm("rag")
+    FakeOllama.answers = {"derivative of x^3": r"By the power rule, \boxed{3x^2}"}
+    a = arm.solve(Problem("d", "What is the derivative of x^3?", "3x^{2}"), 1, ctx)
+
+    assert a.error is None and a.route == "rag" and a.llm_calls == 1
+    assert grade("3x^{2}", a.to_dict()["final_text"])["outcome"] == "correct"
+    assert a.prompt_tokens == 10 and a.extra["retrieved"][0]["module_id"] == "m1"
+    call = FakeOllama.calls[-1]
+    # system temperature (0), harness num_ctx and seed; the retrieved chunk is in the prompt
+    assert call["options"]["temperature"] == 0 and call["options"]["num_ctx"] == 8192
+    assert call["options"]["seed"] == 1
+    assert "power rule: d/dx" in call["messages"][0]["content"]
+    assert rag_main.llm is original_llm  # restored
+
+
+def test_full_arm_verified_route_grades_the_final_answer(system_arm):
+    from benchmarking.datasets import Problem
+
+    arm, ctx = system_arm("full")
+    FakeOllama.answers = {
+        "CRITICAL INSTRUCTION": "Use the power rule.\nFINAL_ANSWER: 3*x**2",
+        "derivative of x^3": '{"operation": "derivative", "expression": "x**3", "variable": "x"}',
+    }
+    a = arm.solve(Problem("d", "Find the derivative of x^3.", "3x^{2}"), 0, ctx)
+
+    assert a.error is None and a.route == "verified", a.error
+    assert a.llm_calls == 2 and a.extra["solver_calls"] == 1
+    assert a.extra["intent"]["operation"] == "derivative" and a.extra["sympy_truth"] == "3*x**2"
+    assert a.final_text == r"\boxed{3 x^{2}}"
+    assert grade("3x^{2}", a.final_text)["outcome"] == "correct"
+    intent_call, solver_call = FakeOllama.calls[-2:]
+    assert intent_call["format"] == "json" and intent_call["options"]["temperature"] == 0
+    assert solver_call["options"]["temperature"] == 0.2
+
+
+def test_full_arm_unverified_after_retries_is_an_error(system_arm):
+    from benchmarking.datasets import Problem
+
+    arm, ctx = system_arm("full")
+    FakeOllama.answers = {
+        "CRITICAL INSTRUCTION": "FINAL_ANSWER: 8",
+        "derivative of x^3": '{"operation": "derivative", "expression": "x**3", "variable": "x"}',
+    }
+    a = arm.solve(Problem("d", "Find the derivative of x^3.", "3x^{2}"), 2, ctx)
+
+    assert a.route == "unverified" and "Unable to verify" in a.error
+    assert a.extra["solver_calls"] == 3 and a.response == "FINAL_ANSWER: 8"
+    assert grade("3x^{2}", a.final_text, error=a.error)["outcome"] == "error"
+    # each retry gets its own seed, so retries are not word-for-word repeats
+    assert [c["seed"] for c in a.extra["calls"]] == [2, 1002, 2002, 3002]
+
+
+def test_full_arm_unsupported_route_uses_plain_rag(system_arm):
+    from benchmarking.datasets import Problem
+
+    arm, ctx = system_arm("full")
+    FakeOllama.answers = {
+        "look for any formulas": r"A prime has two divisors, e.g. \boxed{7}",
+        "Name a prime": '{"operation": "unsupported", "expression": null}',
+    }
+    a = arm.solve(Problem("p", "Name a prime.", "7"), 0, ctx)
+
+    assert a.error is None and a.route == "unsupported" and a.llm_calls == 2
+    assert grade("7", a.to_dict()["final_text"])["outcome"] == "correct"
+
+
+@pytest.mark.parametrize("text, gold", [
+    ("Steps...\nFINAL_ANSWER: x**2*exp(x)", r"x^{2} e^{x}"),
+    ("FINAL_ANSWER: `sqrt(2)/2`.", r"\frac{\sqrt{2}}{2}"),
+    ("FINAL_ANSWER: log(3) + C", r"\ln 3"),
+    ("FINAL_ANSWER: [-2, 2]", r"\left\{-2, 2\right\}"),
+])
+def test_final_answer_is_converted_for_the_grader(text, gold):
+    from benchmarking.arms._system import final_answer_boxed
+
+    assert grade(gold, final_answer_boxed(text))["outcome"] == "correct"
+
+
+# ---------- answer extraction (grading aid for unboxed answers) ----------
+
+def test_needs_extraction_only_for_plain_text_answers():
+    from benchmarking.extract import needs_extraction
+
+    assert needs_extraction({"final_text": "the answer is 2x/(x^2+1)", "response": "..."})
+    assert not needs_extraction({"final_text": r"so \boxed{3}", "response": "..."})
+    assert not needs_extraction({"final_text": "cut off", "response": "cut off", "truncated": True})
+    assert not needs_extraction({"final_text": "", "response": "", "error": "unverified"})
+
+
+def test_extract_then_report_extracted_grading(fake_ollama, tiny_set, tmp_path):
+    from benchmarking import extract
+
+    # p3's answer is plain text: strict grading reads the last number (2), not the answer (7).
+    # p1/p2 are boxed and keep their strict grade. The extractor prompt contains the response,
+    # so the "(p3resp)" key answers the extraction call; the "prime" key answers the base call.
+    FakeOllama.answers = {"(p3resp)": r"\boxed{7}", "2+3": r"so \boxed{5}", "1/2 + 1/4": r"\boxed{0.75}",
+                          "prime": "My answer is the number seven. Two is even, so 2 is excluded. (p3resp)"}
+    out = tmp_path / "runs"
+    run.main(["--arm", "base", "--dataset", str(tiny_set), "--model", "fake:1b", "--seeds", "0",
+              "--ollama-host", fake_ollama, "--out", str(out), "--run-name", "r"])
+    run_dir = out / "r"
+    n_before = len(FakeOllama.calls)
+    extract.main([str(run_dir), "--model", "fake:1b", "--ollama-host", fake_ollama])
+
+    calls = FakeOllama.calls[n_before:]
+    assert len(calls) == 1                          # only the unboxed attempt
+    sent = calls[0]["messages"][0]["content"]
+    assert "(p3resp)" in sent and "Name a prime." not in sent and "7" not in sent.split("Response:")[0]
+    assert calls[0]["options"]["temperature"] == 0.0
+
+    strict = report.summarize_run(report.load_run(run_dir))
+    graded = report.summarize_run(report.load_run(run_dir, grading="extracted"))
+    assert graded["accuracy_mean"] == pytest.approx(1.0)
+    assert graded["grading"]["changed_to_correct"] == 1 and graded["grading"]["missing"] == 0
+    assert strict["accuracy_mean"] == pytest.approx(2 / 3) == pytest.approx(graded["grading"]["strict_accuracy"])
+    assert "Strict" in report.to_markdown([graded], [])
+
+    # re-running does no new work
+    extract.main([str(run_dir), "--model", "fake:1b", "--ollama-host", fake_ollama])
+    assert len(FakeOllama.calls) == n_before + 1
+
+
+def test_extractor_none_is_an_extraction_failure():
+    from benchmarking.extract import _sha, extracted_grade
+
+    row = {"problem_id": "p", "seed": 0, "gold": "7", "outcome": "wrong_answer", "extracted": "2",
+           "response": "I cannot answer this from the documents.", "final_text": None}
+    rec = {"reply": r"\boxed{NONE}", "response_sha256": _sha(row["response"])}
+    assert extracted_grade(row, {("p", 0): rec})["outcome"] == "extraction_failure"
+    # a record made for a different response is stale and ignored
+    stale = {**rec, "response_sha256": "0" * 64}
+    assert extracted_grade(row, {("p", 0): stale})["source"] == "missing"
+
+
+@pytest.mark.parametrize("reply, gold", [
+    (r"\boxed{3x^2 sin(x) + x^3 cos(x)}", r"x^{2} \left(x \cos{\left(x \right)} + 3 \sin{\left(x \right)}\right)"),
+    (r"\boxed{\frac{2}{1+4x^2}}", r"\frac{2}{4 x^{2} + 1}"),
+    (r"\boxed{ln(2)}", r"\ln 2"),
+])
+def test_extracted_replies_with_bare_function_names_still_grade(reply, gold):
+    from benchmarking.extract import latexify
+
+    assert grade(gold, latexify(reply))["outcome"] == "correct"
+    assert latexify(r"\boxed{\sin x}") == r"\boxed{\sin x}"   # already LaTeX: unchanged

@@ -4,6 +4,8 @@
   python -m benchmarking.report <baseline_run> <other_run> ...     # paired comparison vs the first run
   python -m benchmarking.report <runs...> --save benchmarking/results/math500-gemma3-4b
   python -m benchmarking.report <runs...> --regrade                 # re-grade raw outputs with the current grader
+  python -m benchmarking.report <runs...> --grading extracted       # grade unboxed answers on their extracted copy
+                                                                    # (run python -m benchmarking.extract first)
 
 --save writes <name>.md and <name>.json (commit these; raw runs stay out of git).
 """
@@ -16,6 +18,7 @@ import sys
 from collections import Counter, defaultdict
 from pathlib import Path
 
+from .extract import extracted_grade, load_extractions, needs_extraction
 from .grading import OUTCOMES, grade, grader_info
 from .stats import bootstrap_mean_ci, mcnemar_exact, mean_sd, paired_bootstrap_diff, wilson_ci
 
@@ -24,14 +27,34 @@ REFERENCE = {("math500", "gemma3:4b"): ("Gemma 3 4B IT, MATH 0-shot (Google mode
 CALIBRATION_BAND = 0.10
 
 
-def load_run(run_dir: Path, regrade: bool = False) -> dict:
+def load_run(run_dir: Path, regrade: bool = False, grading: str = "strict") -> dict:
+    """grading="extracted": attempts with no \\boxed{} answer are graded on their extracted copy
+    (benchmarking/extract.py). Each row keeps strict_outcome and gets extracted_outcome either way."""
     manifest = json.loads((run_dir / "manifest.json").read_text(encoding="utf-8"))
     with open(run_dir / "attempts.jsonl", encoding="utf-8") as f:
         rows = [json.loads(line) for line in f if line.strip()]
     if regrade:
         for r in rows:
             r.update(grade(r["gold"], r["final_text"], truncated=r["truncated"], error=r["error"]))
-    return {"dir": str(run_dir), "manifest": manifest, "rows": rows}
+    ext = load_extractions(run_dir)
+    records = ext[1] if ext else None
+    sources = Counter()
+    for r in rows:
+        g = extracted_grade(r, records)
+        sources[g["source"]] += 1
+        r["strict_outcome"], r["extracted_outcome"] = r["outcome"], g["outcome"]
+        if grading == "extracted":
+            r["outcome"], r["extracted"] = g["outcome"], g["extracted"]
+    extraction = {
+        "unboxed": sum(needs_extraction(r) for r in rows),
+        "extracted": sources["extractor"], "missing": sources["missing"],
+        "extractor": None if ext is None else {k: ext[0].get(k) for k in ("model", "model_digest", "prompt",
+                                                                          "prompt_sha256")},
+    }
+    if grading == "extracted" and extraction["missing"]:
+        print(f"warning: {run_dir.name}: {extraction['missing']} unboxed attempts have no extraction; they keep "
+              f"their strict grade (run python -m benchmarking.extract {run_dir})", file=sys.stderr)
+    return {"dir": str(run_dir), "manifest": manifest, "rows": rows, "grading": grading, "extraction": extraction}
 
 
 def _pct(x: float) -> str:
@@ -91,6 +114,17 @@ def summarize_run(run: dict) -> dict:
         "cost": {"latency_s": avg("latency_s"), "llm_calls": avg("llm_calls"),
                  "prompt_tokens": avg("prompt_tokens"), "completion_tokens": avg("completion_tokens")},
         "intent": intent_acc,
+        "system_temperatures": (m.get("arm") or {}).get("system_temperatures"),
+        "grading": {
+            "mode": run.get("grading", "strict"),
+            "strict_accuracy": sum(r.get("strict_outcome", r["outcome"]) == "correct" for r in rows) / len(rows),
+            "extracted_accuracy": sum(r.get("extracted_outcome", r["outcome"]) == "correct" for r in rows) / len(rows),
+            "changed_to_correct": sum(r.get("strict_outcome") != "correct" and r.get("extracted_outcome") == "correct"
+                                      for r in rows),
+            "changed_to_wrong": sum(r.get("strict_outcome") == "correct" and r.get("extracted_outcome") != "correct"
+                                    for r in rows),
+            **(run.get("extraction") or {}),
+        },
         "complete": m["dataset"]["n_run"] == m["dataset"]["n_total"] and "finished_at" in m,
     }
     ref = REFERENCE.get((out["dataset"], out["model"]))
@@ -117,6 +151,10 @@ def compare(base: dict, other: dict) -> dict:
 
 def to_markdown(summaries: list[dict], comparisons: list[dict]) -> str:
     L = ["# Benchmark report", ""]
+    if any(s["grading"]["mode"] == "extracted" for s in summaries):
+        L += ["Grading: **extracted**. Attempts with no `\\boxed{}` answer are graded on the final answer an "
+              "extractor model copied from the response (`benchmarking/extract.py`); every other attempt keeps "
+              "its strict grade.", ""]
     L += ["| Run | Arm | Dataset | Model | Problems × seeds | Accuracy (mean ± sd) | 95% CI | Calls/problem | Latency/problem |",
           "| --- | --- | --- | --- | --- | --- | --- | --- | --- |"]
     for s in summaries:
@@ -132,11 +170,26 @@ def to_markdown(summaries: list[dict], comparisons: list[dict]) -> str:
     for s in summaries:
         L += [f"## {s['run_id']}", "",
               f"Options: `{json.dumps(s['options'])}`, prompt `{s['prompt']}`, digest `{(s['model_digest'] or 'n/a')[:19]}`", ""]
+        if s.get("system_temperatures"):
+            L += [f"Temperatures used (the system's own; the CLI temperature above does not apply): "
+                  f"`{json.dumps(s['system_temperatures'])}`", ""]
         L.append("Per seed: " + ", ".join(
             f"seed {k}: {v['correct']}/{v['n']} = {_pct(v['accuracy'])} "
             f"(Wilson {_pct(v['wilson95'][0])}–{_pct(v['wilson95'][1])})" for k, v in s["per_seed"].items()))
         L.append("")
         L.append("Outcomes: " + ", ".join(f"{o} {s['outcomes'].get(o, 0)}" for o in OUTCOMES))
+        gr = s["grading"]
+        if gr.get("unboxed"):
+            ex = gr.get("extractor")
+            if ex is None:
+                n_attempts = sum(v["n"] for v in s["per_seed"].values())
+                L.append(f"Unboxed answers: {gr['unboxed']} of {n_attempts} attempts were graded from plain text. "
+                         "Not extracted yet (python -m benchmarking.extract).")
+            else:
+                L.append(f"Unboxed answers: {gr['unboxed']} graded from plain text; {gr['extracted']} extracted "
+                         f"({ex['model']}, prompt `{ex['prompt']}`), {gr['missing']} missing. "
+                         f"Strict {_pct(gr['strict_accuracy'])} → extracted {_pct(gr['extracted_accuracy'])} "
+                         f"(+{gr['changed_to_correct']} / −{gr['changed_to_wrong']}).")
         if set(s["routes"]) != {"model"}:
             L.append("Routes: " + ", ".join(f"{k} {v}" for k, v in sorted(s["routes"].items())))
         if s["intent"]:
@@ -168,9 +221,11 @@ def main(argv=None) -> None:
     ap.add_argument("runs", nargs="+", help="run folders; the first is the baseline for comparisons")
     ap.add_argument("--regrade", action="store_true", help="re-grade raw outputs with the installed grader")
     ap.add_argument("--save", help="path prefix for <prefix>.md and <prefix>.json")
+    ap.add_argument("--grading", choices=["strict", "extracted"], default="strict",
+                    help="extracted: grade unboxed answers on their extracted copy (see benchmarking/extract.py)")
     args = ap.parse_args(argv)
 
-    runs = [load_run(Path(r), args.regrade) for r in args.runs]
+    runs = [load_run(Path(r), args.regrade, args.grading) for r in args.runs]
     summaries = [summarize_run(r) for r in runs]
     comparisons = [compare(runs[0], r) for r in runs[1:]
                    if r["manifest"]["dataset"]["name"] == runs[0]["manifest"]["dataset"]["name"]]

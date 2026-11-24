@@ -12,8 +12,8 @@ The first target is **`gemma3:4b`** (Ollama). Any Ollama model can be passed wit
 | --- | --- | --- |
 | `base` | Raw model, zero-shot step-by-step prompt, answer in `\boxed{}` | **Ready** |
 | `sympy` | `verification.py` intent extraction → SymPy. Falls back to `base` when unsupported, failed or timed out | **Ready** (uses the system code on main) |
-| `rag` | `RAG/main.py` `rag()` with real retrieval | **Pending**, see [TODO](#todo) |
-| `full` | `rag_with_verification()`, H2flow end to end | **Pending**, see [TODO](#todo) |
+| `rag` | `RAG/main.py` `rag()` with real Elasticsearch retrieval | **Ready** (needs Elasticsearch and the index), see [The `rag` and `full` arms](#the-rag-and-full-arms) |
+| `full` | `rag_with_verification()`, H2flow end to end | **Ready** (needs Elasticsearch and the index), see [The `rag` and `full` arms](#the-rag-and-full-arms) |
 
 | Dataset | Size | Purpose |
 | --- | --- | --- |
@@ -87,6 +87,42 @@ python -m benchmarking.report benchmarking/results/raw/<math500-base-run> --save
 python -m benchmarking.report benchmarking/results/raw/<calculus-base-run> benchmarking/results/raw/<calculus-sympy-run>
 ```
 
+RAG and full-system runs (Elasticsearch up via `docker compose up -d`, textbooks indexed; see the root README).
+Each model call keeps the system's own temperature, so `--temperature` does not apply to these arms. Compare them
+against a base run at temperature 0, the temperature `rag()` uses:
+
+```bash
+python -m benchmarking.run --arm base --dataset math500 --temperature 0 --seeds 0 --run-name math500-base-gemma3-4b-t0
+```
+
+```bash
+python -m benchmarking.run --arm rag --dataset math500 --seeds 0
+```
+
+```bash
+python -m benchmarking.run --arm full --dataset math500
+```
+
+Most `rag` answers aren't in `oxed{}`, so extract them first, then report both ways
+(see [Answer extraction](#answer-extraction)):
+
+```bash
+python -m benchmarking.extract benchmarking/results/raw/math500-base-gemma3-4b-t0 benchmarking/results/raw/<math500-rag-run> benchmarking/results/raw/<math500-full-run>
+```
+
+```bash
+python -m benchmarking.report benchmarking/results/raw/math500-base-gemma3-4b-t0 benchmarking/results/raw/<math500-rag-run> benchmarking/results/raw/<math500-full-run> --grading extracted
+```
+
+Without `--grading extracted` the report uses strict grades, and each run still shows a line comparing the strict and
+extracted scores.
+
+On Windows, set `OLLAMA_HOST=http://127.0.0.1:11434` and `H2FLOW_ES_URL=http://127.0.0.1:9201` first. Calls to
+`localhost` try IPv6 first and each one waits about 2 s, which inflates latency in proportion to the number of calls.
+
+`rag` is deterministic at temperature 0, so one seed is enough. `full` retries at temperature 0.2, so keep 3 seeds.
+Paired comparisons work across runs with different seed counts (they use each problem's fraction of correct seeds).
+
 An interrupted run continues where it stopped, using its saved settings:
 
 ```bash
@@ -155,6 +191,76 @@ how many problems took each route, and on the calculus set, how often the extrac
 Limits inherited from `verification.py`: the intent model is fixed there (`gemma3:4b`, temperature 0), so `--model` and
 `--temperature` don't apply to that call, and its token counts aren't exposed.
 
+### The `rag` and `full` arms
+
+Both arms run the system code on `main` unchanged (`RAG/main.py`, `verification.py`). For each problem they swap the
+system's model objects (`llm`, `solver_llm`, `extractor_llm`) for stand-ins that call Ollama through the harness
+client, then restore them ([arms/_system.py](arms/_system.py)). The system's prompts, retrieval, SymPy check and retry loop
+are untouched.
+
+| Setting | Value | Why |
+| --- | --- | --- |
+| Temperature | The system's own per model: `rag()` answer 0, verification solver 0.2, intent extractor 0. Recorded in the manifest. | Measures the system as configured. A base run at temperature 0 matches `rag()` exactly. |
+| `num_ctx`, `num_predict` | Harness values (8192, 4096) | `num_ctx` 8192 keeps five chunks from being cut silently. `num_predict` stops repetition loops. |
+| Seed | Call *n* of an attempt uses `seed + 1000·n` | The first call matches the base arm's seed. Retries get new seeds, as they do when deployed. With one fixed seed, retries 2 and 3 would repeat retry 1 word for word. |
+| Model | `--model` for every call (default `gemma3:4b`, what the system hard-codes) | Prints a warning if they differ. |
+| Retrieval | `top_k` 5, index `H2FLOW_ES_INDEX` (default `textbook-chunks`) at `H2FLOW_ES_URL` | `setup` refuses to run if Elasticsearch or the index is missing. The manifest records the index's chunk and `Exercises` counts. |
+| SymPy (`full`) | The system's `solve_with_sympy`, in a child process with a 30 s limit | An in-process runaway integral would hang the run. |
+
+Each attempt records its calls (role, seed, tokens, latency, stop reason) and the retrieved chunks, and for `full` the intent,
+the SymPy result and the number of solver calls.
+
+**Grading.**
+- `rag`: the prompt asks for no marked answer, so Math-Verify reads the whole response. Watch the extraction-failure count.
+- `full`, verified answers: the system writes `FINAL_ANSWER:` in SymPy syntax (`x**2*exp(x)`). The arm converts it to
+  `oxed{}` LaTeX with SymPy's own parser, not `verification.py`, so the grader stays independent.
+- `full`, unsupported questions: graded on the plain RAG response.
+
+**`full` routes**, shown in the report:
+
+| Route | Meaning | Outcome |
+| --- | --- | --- |
+| `verified` | The answer matched SymPy after up to 3 tries | Graded |
+| `unsupported` | SymPy had no answer; plain RAG answer | Graded |
+| `unverified` | Every retry failed; the system returns no answer (the UI shows a 422) | `error` (last response kept) |
+| `sympy_timeout` | SymPy took longer than 30 s | `error` |
+| `<phase>_error` | An exception in retrieval, intent, sympy, answer or solver | `error` |
+
+The verified prompt gives the model the SymPy result, so accuracy on the `verified` route mostly measures intent
+extraction plus SymPy, like the `sympy` arm. Say so when you report `full`.
+
+### Answer extraction
+
+The base prompt asks for `oxed{}`, but the system's RAG prompt doesn't. Without a box, Math-Verify grades the last
+expression in the text, which is often not the answer: `2x/(x^2+1)` was read as `1).`, and `8π` as `8`. On calculus v1,
+17 of 27 `rag` answers were unboxed, and strict grading marked 7 correct answers wrong (66.7% strict, 92.6% by hand).
+
+[extract.py](extract.py) fixes this for grading only. For each attempt with no `oxed{}` in its graded text (and no
+error or truncation), it asks `gemma3:4b` (temperature 0, prompt [prompts/extract_v1.txt](prompts/extract_v1.txt)) to copy
+the final answer the response states into `oxed{}`, or `oxed{NONE}` if it states none.
+`report --grading extracted` grades those attempts on the copy. Every other attempt keeps its strict grade.
+
+- **The extractor sees only the response:** not the gold answer, and not the question. In an earlier draft that showed the question,
+  the extractor solved a problem the response had declined to answer.
+- **The raw attempts are never changed.** Extractions go to `extraction.json` and `extracted.jsonl` in the run folder,
+  each tied to the sha256 of the response it read. Re-running continues; `--redo` starts over.
+- **Extractor calls are not system cost** and are not added to calls, tokens or latency.
+- **Function names:** names written without a backslash (`sin(x)`) get one before grading, since Math-Verify would read
+  `sin` as s·i·n.
+
+**Validation** (prompt `extract_v1`):
+
+| Check | Result |
+| --- | --- |
+| Calculus v1 `rag` run, 17 unboxed answers, against hand grades | 17/17 agree; the run scores 25/27 (92.6%), the same as by hand. The response that declined to answer became `NONE`. |
+| Base MATH-500 answers with `oxed{}` unwrapped to plain text: 116 wrong originals | **0 turned correct.** The extractor never fixed a wrong answer. |
+| Same, 100 random correct originals | 92 kept. 8 lost: an intermediate value was picked, or a text answer (`Navin`, `(E)`) was dropped. |
+
+So the extracted score can **miss** correct answers but did not **invent** any: treat it as a slightly conservative
+estimate. Report both numbers, and look at the report's `(+fixed / −lost)` counts: a large "lost" count means the
+extractor is dropping answers that strict grading happened to read correctly. Changing the prompt means
+adding `extract_v2.txt` and repeating this validation.
+
 ### Adding a dataset or arm
 
 - **Dataset:** write a JSONL file with `id`, `problem`, `answer_latex` (no `$`), plus any metadata such as `topic` or `level`, which the report
@@ -193,12 +299,17 @@ Published Gemma 3 4B scores (for calibration, not comparison):
 
 ## TODO
 
+**Runs:**
+- [ ] Re-run `base` at temperature 0 (1 seed) on MATH-500 and calculus, as the comparison point for `rag` and `full`. Keep the
+      temperature 0.2 baseline above as its own result.
+- [ ] Run `rag` (1 seed) and `full` (3 seeds) on both sets, then `extract` every run and report with `--grading extracted`.
+      Check the routes for `full`.
+- [x] Calculus v1, `base` at temperature 0 (27/27) and `rag` (strict 66.7, extracted 92.6; the 2 real failures are lim-04,
+      misled by a retrieved chunk, and lim-06, which declined to answer after irrelevant retrieval).
+- [ ] Hand-check a sample of extracted `rag` grades on MATH-500. The validation above found no false positives, but
+      text answers (names, multiple-choice letters) are a known gap.
+
 **Blocked on system code** (benchmark side ready; each item names what the system has to provide):
-- [ ] `rag` arm ([arms/rag.py](arms/rag.py)): needs `RAG/main.py` to be importable without running a query, and `rag()` to use
-      `search.retrieve.get_documents` in place of `get_documents_dummy`. Check extraction failures on its first run, because the RAG prompt doesn't ask for
-      a marked final answer.
-- [ ] `full` arm ([arms/full.py](arms/full.py)): needs `rag_with_verification()` to be implemented, and per-question usage (LLM calls,
-      retries, tokens) to be exposed so cost can be compared.
 - [ ] Optional API mode for `full`, posting to `POST /api/v1/questions` once the API (`dylan/backend-api-starter`) is merged.
 - [ ] `sympy` arm: token counts for the intent call, and running it with models other than `gemma3:4b`. Both need `verification.py` to expose them.
 

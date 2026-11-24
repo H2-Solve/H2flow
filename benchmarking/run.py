@@ -85,7 +85,7 @@ def _done_keys(path: Path) -> set[tuple[str, int]]:
 
 def parse_args(argv=None) -> argparse.Namespace:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--arm", default="base", help="base | sympy | rag (pending) | full (pending)")
+    ap.add_argument("--arm", default="base", help="base | sympy | rag | full")
     ap.add_argument("--dataset", default="math500", help="math500 | calculus | path/to/set.jsonl")
     ap.add_argument("--model", default=DEFAULTS["model"])
     ap.add_argument("--seeds", type=int, nargs="+", default=DEFAULTS["seeds"])

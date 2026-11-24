@@ -58,11 +58,13 @@ class OllamaClient:
         except (urllib.error.URLError, TimeoutError, ConnectionError) as exc:
             raise OllamaError(f"cannot reach Ollama at {self.host} ({exc})") from exc
 
-    def chat(self, model: str, messages: list[dict], options: dict) -> ChatResult:
+    def chat(self, model: str, messages: list[dict], options: dict, format: str | None = None) -> ChatResult:
+        """format="json" constrains the reply to JSON (used by the system's intent extractor)."""
         start = time.perf_counter()
-        res = self._request("/api/chat", {
-            "model": model, "messages": messages, "stream": False, "options": options,
-        })
+        payload = {"model": model, "messages": messages, "stream": False, "options": options}
+        if format is not None:
+            payload["format"] = format
+        res = self._request("/api/chat", payload)
         return ChatResult(
             content=(res.get("message") or {}).get("content", ""),
             prompt_tokens=res.get("prompt_eval_count"),
