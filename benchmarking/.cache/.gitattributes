@@ -1,0 +1,2 @@
+# Temporary (remove with this folder): keep the cached dataset byte-identical so its sha256 matches the run manifests.
+* -text

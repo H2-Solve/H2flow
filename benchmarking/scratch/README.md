@@ -14,3 +14,7 @@ Run from the repo root with Ollama and Elasticsearch up (on Windows, set
 | `repeat_lim01.py` | Repeats rag on lim-01 to show temperature-0 run-to-run variation in Ollama. |
 | `rag_wrong.py <attempts.jsonl>` | Prints unboxed counts and the tail of every non-correct attempt, for hand grading. |
 | `inspect_runs.py <run dirs...>` | Dumps per-attempt calls, retrieval, intent and response tails. |
+| `full_errors.py <attempts.jsonl>` | Groups a `full` run's failures by problem and route, and dumps the intent, SymPy truth, calls and last response for each. |
+| `repro_full_errors.py <attempts.jsonl>` | Replays each failure offline through `verification.py` (no LLM), showing where SymPy crashes and why verification rejects answers. |
+
+See [HANDOFF.md](HANDOFF.md) for where the work stands.
